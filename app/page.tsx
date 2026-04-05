@@ -4,6 +4,7 @@ import { HeroBanner } from "@/components/HeroBanner";
 import { CourseCard } from "@/components/CourseCard";
 import { Button } from "@/components/Button";
 import { Course } from "@/types/course";
+import Link from "next/link";
 
 async function getFeaturedCourses(): Promise<Course[]> {
   try {
@@ -95,9 +96,11 @@ export default async function Home() {
                 <h3 className="font-bold text-zinc-900 dark:text-zinc-100 mb-6">
                   Sign in to track your learning progress
                 </h3>
-                <Button variant="solid" className="w-32 py-2.5">
-                  Log in
-                </Button>
+                <Link href="/?auth=login">
+                  <Button variant="solid" className="w-32 py-2.5">
+                    Log in
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>

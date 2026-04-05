@@ -1,9 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./Button";
-import { ThemeToggle } from "./ThemeToggle";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { LogoutButton } from "./LogoutButton";
+import { AuthButtons } from "./AuthModals";
 
-export function Header() {
+export async function Header() {
+  const session = await getServerSession(authOptions);
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-black/80">
       <div className="mx-auto flex py-6 max-w-[1566px] items-center justify-between px-4 lg:px-0">
@@ -26,9 +30,28 @@ export function Header() {
           </button>
           
           <div className="hidden sm:flex items-center gap-4 ml-4">
-            {/* <ThemeToggle /> */}
-            <Button variant="outline" className="w-[114px] h-[60px] text-xl border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 border">Log In</Button>
-            <Button variant="solid" className="w-[125px] h-[60px] text-xl">Sign Up</Button>
+            {session ? (
+              <div className="flex items-center gap-3">
+                <Link href="?auth=profile">
+                  {session.user?.image ? (
+                    <Image 
+                      src={session.user.image} 
+                      alt="User Avatar" 
+                      width={40} 
+                      height={40} 
+                      className="rounded-full border border-gray-200 dark:border-gray-800 hover:ring-2 hover:ring-indigo-500 transition-all cursor-pointer"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold border border-indigo-200 text-lg hover:ring-2 hover:ring-indigo-500 transition-all cursor-pointer">
+                      {session.user?.email?.[0]?.toUpperCase() || 'U'}
+                    </div>
+                  )}
+                </Link>
+                <LogoutButton />
+              </div>
+            ) : (
+              <AuthButtons />
+            )}
           </div>
         </div>
       </div>

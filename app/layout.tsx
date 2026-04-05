@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/components/AuthProvider";
+import { GlobalAuthModals } from "@/components/AuthModals";
+import { Suspense } from "react";
 import "./globals.css";
-
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -43,7 +45,14 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        <AuthProvider>
+          {children}
+          <Suspense fallback={null}>
+            <GlobalAuthModals />
+          </Suspense>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
