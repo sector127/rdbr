@@ -17,7 +17,7 @@ export function Button({
   
   const variants = {
     solid: "bg-indigo-500 text-white hover:bg-indigo-600 active:bg-indigo-700",
-    outline: "border-2 border-indigo-500 text-indigo-500 hover:bg-indigo-50 active:bg-indigo-100",
+    outline: "border-2 border-indigo-500 text-indigo-500 hover:bg-indigo-600 hover:text-white active:bg-indigo-100",
     ghost: "text-indigo-500 hover:bg-indigo-50 active:bg-indigo-100 dark:hover:bg-indigo-950 dark:text-indigo-400"
   };
 

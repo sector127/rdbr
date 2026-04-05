@@ -27,7 +27,7 @@ export function HeroBanner() {
 
   return (
     <div 
-      className="relative w-[1566px] max-w-full h-[420px] mx-auto overflow-hidden rounded-3xl mt-8 flex flex-col justify-center bg-zinc-900"
+      className="relative w-[1566px] max-w-full h-[420px] mx-auto overflow-hidden rounded-3xl mt-16 flex flex-col justify-center bg-zinc-900"
     >
       {/* Background Image Carousel */}
       {HERO_IMAGES.map((src, index) => (
