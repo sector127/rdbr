@@ -3,9 +3,36 @@ import { Footer } from "@/components/Footer";
 import { HeroBanner } from "@/components/HeroBanner";
 import { CourseCard } from "@/components/CourseCard";
 import { Button } from "@/components/Button";
+import { Course } from "@/types/course";
 
-export default function Home() {
-  const courses = [
+async function getFeaturedCourses(): Promise<Course[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.redclass.redberryinternship.ge'}/api/courses`, {
+      next: { revalidate: 3600 }
+    });
+    if (!res.ok) return [];
+    
+    const data = await res.json();
+    const coursesList: Course[] = data.data || [];
+    return coursesList.filter(c => c.isFeatured).slice(0, 3);
+  } catch (e) {
+    console.error("Failed to fetch courses:", e);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const coursesData = await getFeaturedCourses();
+  const displayCourses = coursesData.map(course => ({
+    title: course.title,
+    lecturer: course.instructor.name,
+    rating: course.avgRating || 0,
+    price: Number(course.basePrice),
+    imageUrl: course.image,
+    description: course.description
+  }));
+
+  const courses = displayCourses.length > 0 ? displayCourses : [
     { title: "Advanced React & TypeScript Development", lecturer: "Marilyn Mango", rating: 4.9, price: 299 },
     { title: "Advanced React & TypeScript Development", lecturer: "Marilyn Mango", rating: 4.9, price: 299 },
     { title: "Advanced React & TypeScript Development", lecturer: "Marilyn Mango", rating: 4.9, price: 299 },

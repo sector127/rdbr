@@ -8,22 +8,28 @@ export interface CourseCardProps {
   price: number;
   imageUrl?: string;
   blurred?: boolean;
+  description?: string;
 }
 
-export function CourseCard({ title, lecturer, rating, price, imageUrl, blurred }: CourseCardProps) {
+export function CourseCard({ title, lecturer, rating, price, imageUrl, blurred, description }: CourseCardProps) {
   return (
     <div className={`flex flex-col bg-white overflow-hidden rounded-xl border border-zinc-200 shadow-sm transition-all hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 ${blurred ? 'blur-sm opacity-60 pointer-events-none' : ''}`}>
       <div className="relative h-48 w-full bg-zinc-100 dark:bg-zinc-800 p-4 pt-4">
-        {/* Placeholder for the course image */}
-        <div className="absolute inset-2 md:inset-4 rounded-lg bg-gradient-to-br from-indigo-900 to-zinc-900 overflow-hidden shadow-inner flex flex-col">
-           <div className="text-xs text-green-400 font-mono p-4 opacity-50 whitespace-pre">
-             {`const app = express();
+        {imageUrl ? (
+          <div className="absolute inset-2 md:inset-4 rounded-lg overflow-hidden shadow-inner">
+            <Image src={imageUrl} alt={title} fill className="object-cover" />
+          </div>
+        ) : (
+          <div className="absolute inset-2 md:inset-4 rounded-lg bg-gradient-to-br from-indigo-900 to-zinc-900 overflow-hidden shadow-inner flex flex-col">
+             <div className="text-xs text-green-400 font-mono p-4 opacity-50 whitespace-pre">
+               {`const app = express();
 app.get('/', (req, res) => {
   res.send('Hello World!');
 });`}
-           </div>
-           <div className="h-full bg-zinc-950 opacity-40"></div>
-        </div>
+             </div>
+             <div className="h-full bg-zinc-950 opacity-40"></div>
+          </div>
+        )}
       </div>
       
       <div className="flex flex-col flex-grow p-6">
@@ -41,8 +47,8 @@ app.get('/', (req, res) => {
           {title}
         </h3>
         
-        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 flex-grow">
-          Master modern React patterns, hooks, and TypeScript integration for building scalable web applications.
+        <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-6 flex-grow line-clamp-3">
+          {description || "Master modern React patterns, hooks, and TypeScript integration for building scalable web applications."}
         </p>
         
         <div className="flex items-center justify-between mt-auto pt-4 border-t border-zinc-100 dark:border-zinc-800">

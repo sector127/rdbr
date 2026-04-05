@@ -21,14 +21,14 @@ export function Header() {
         
         <div className="flex items-center gap-4">
           <button className="flex items-center gap-2 text-xl font-medium text-gray-600 hover:text-black dark:text-zinc-300 dark:hover:text-white transition-colors">
-            <Image src="/icons/BrowseCourses.svg" alt="Browse Courses" width={20} height={20} className="dark:invert" />
+            <Image src="/icons/BrowseCourses.svg" alt="Browse Courses" width={26} height={26} className="dark:invert" />
             Browse Courses
           </button>
           
           <div className="hidden sm:flex items-center gap-4 ml-4">
-            <ThemeToggle />
-            <Button variant="outline" className="w-[114px] h-[60px] border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 border">Log In</Button>
-            <Button variant="solid" className="w-[125px] h-[60px]">Sign Up</Button>
+            {/* <ThemeToggle /> */}
+            <Button variant="outline" className="w-[114px] h-[60px] text-xl border-indigo-200 hover:bg-indigo-50 hover:border-indigo-300 border">Log In</Button>
+            <Button variant="solid" className="w-[125px] h-[60px] text-xl">Sign Up</Button>
           </div>
         </div>
       </div>
