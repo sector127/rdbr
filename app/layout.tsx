@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import { GlobalAuthModals } from "@/components/AuthModals";
+import { EnrolledCoursesSidebar } from "@/components/EnrolledCoursesSidebar";
 import { Suspense } from "react";
 import "./globals.css";
 const inter = Inter({
@@ -50,6 +51,7 @@ export default function RootLayout({
           {children}
           <Suspense fallback={null}>
             <GlobalAuthModals />
+            <EnrolledCoursesSidebar />
           </Suspense>
         </AuthProvider>
       </body>

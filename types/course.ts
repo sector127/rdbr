@@ -12,3 +12,10 @@ export interface Course {
   topic: { id: number; name: string; categoryId: number };
   instructor: { id: number; name: string; avatar: string };
 }
+
+export interface PaginationMeta {
+  currentPage: number;
+  lastPage: number;
+  perPage: number;
+  total: number;
+}

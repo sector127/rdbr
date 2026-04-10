@@ -1,9 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "./Button";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { LogoutButton } from "./LogoutButton";
 import { AuthButtons } from "./AuthModals";
 
 export async function Header() {
@@ -22,23 +20,34 @@ export async function Header() {
             />
           </Link>
         </div>
-        
-        <div className="flex items-center gap-4">
-          <button className="flex items-center gap-2 text-xl font-medium text-gray-600 hover:text-black dark:text-zinc-300 dark:hover:text-white transition-colors">
+
+        <div className="flex items-center gap-6">
+          <Link href="/courses" className="flex items-center gap-2 text-xl font-medium text-gray-600 hover:text-black dark:text-zinc-300 dark:hover:text-white transition-colors">
             <Image src="/icons/BrowseCourses.svg" alt="Browse Courses" width={26} height={26} className="dark:invert" />
             Browse Courses
-          </button>
-          
-          <div className="hidden sm:flex items-center gap-4 ml-4">
+          </Link>
+
+          {session && (
+            <Link href="?enrolled=true" className="flex items-center gap-2 text-xl font-medium text-gray-600 hover:text-black dark:text-zinc-300 dark:hover:text-white transition-colors">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="dark:invert">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                <polyline points="9 7 13 10 9 13" />
+              </svg>
+              Enrolled Courses
+            </Link>
+          )}
+
+          <div className="hidden sm:flex items-center gap-4 ml-2">
             {session ? (
               <div className="flex items-center gap-3">
                 <Link href="?auth=profile">
                   {session.user?.image ? (
-                    <Image 
-                      src={session.user.image} 
-                      alt="User Avatar" 
-                      width={40} 
-                      height={40} 
+                    <Image
+                      src={session.user.image}
+                      alt="User Avatar"
+                      width={40}
+                      height={40}
                       className="rounded-full border border-gray-200 dark:border-gray-800 hover:ring-2 hover:ring-indigo-500 transition-all cursor-pointer"
                     />
                   ) : (
@@ -47,7 +56,6 @@ export async function Header() {
                     </div>
                   )}
                 </Link>
-                <LogoutButton />
               </div>
             ) : (
               <AuthButtons />

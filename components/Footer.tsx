@@ -32,7 +32,7 @@ export function Footer() {
             <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 mb-4">Explore</h3>
             <ul className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
               <li><Link href="#" className="hover:text-indigo-600 transition-colors">Enrolled Courses</Link></li>
-              <li><Link href="#" className="hover:text-indigo-600 transition-colors">Browse Courses</Link></li>
+              <li><Link href="/courses" className="hover:text-indigo-600 transition-colors">Browse Courses</Link></li>
             </ul>
           </div>
           

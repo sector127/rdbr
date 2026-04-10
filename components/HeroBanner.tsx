@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "./Button";
 
 const HERO_IMAGES = [
@@ -55,9 +56,11 @@ export function HeroBanner() {
         <p className="text-md md:text-2xl text-white/90 mb-8 max-w-7xl font-light">
           Explore a wide range of expert-led courses in design, development, business, and more. Find the skills you need to grow your career and learn at your own pace.
         </p>
-        <Button variant="solid" className="bg-indigo-600 hover:bg-indigo-500 border-none px-[25px] py-[18px] text-xl shadow-lg transition-transform hover:-translate-y-0.5">
-          Browse Courses
-        </Button>
+        <Link href="/courses">
+          <Button variant="solid" className="bg-indigo-600 hover:bg-indigo-500 border-none px-[25px] py-[18px] text-xl shadow-lg transition-transform hover:-translate-y-0.5">
+            Browse Courses
+          </Button>
+        </Link>
       </div>
 
       {/* Carousel Controls */}
