@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { ThemeToggle } from "./ThemeToggle";
+
 
 const CloseIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-gray-600">
@@ -39,6 +42,15 @@ const UploadIcon = () => (
     <line x1="12" y1="3" x2="12" y2="15" />
   </svg>
 );
+
+const LogOutIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <polyline points="16 17 21 12 16 7" />
+    <line x1="21" y1="12" x2="9" y2="12" />
+  </svg>
+);
+
 
 function ModalOverlay({ children, onClose }: { children: React.ReactNode, onClose: () => void }) {
   const [mounted, setMounted] = useState(false);
@@ -181,28 +193,43 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
     <ModalOverlay onClose={onClose}>
       <h2 className="text-[28px] font-bold text-center text-gray-900 dark:text-white mb-8">Profile</h2>
 
-      <div className="flex items-center gap-4 mb-6">
-        <div className="relative w-16 h-16 shrink-0">
-          <img
-            src={formData.avatarPreview || formData.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200"}
-            alt="Profile Avatar"
-            className="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700"
-          />
-          <div className={`absolute bottom-0 right-0 w-[14px] h-[14px] border-2 border-white dark:border-gray-900 rounded-full ${formData.profileComplete ? 'bg-[#1cd14f]' : 'bg-gray-400'}`}></div>
+      <div className="flex items-start justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className="relative w-16 h-16 shrink-0">
+            <img
+              src={formData.avatarPreview || formData.avatar || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=200"}
+              alt="Profile Avatar"
+              className="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700"
+            />
+            <div className={`absolute bottom-0 right-0 w-[14px] h-[14px] border-2 border-white dark:border-gray-900 rounded-full ${formData.profileComplete ? 'bg-[#1cd14f]' : 'bg-[#F4A316]'}`}></div>
+          </div>
+          <div>
+            {loading ? (
+              <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
+            ) : (
+              <>
+                <h3 className="text-[19px] font-bold text-gray-900 dark:text-white leading-tight">{formData.fullName || "User"}</h3>
+                <p className={`text-[13px] font-medium mt-0.5 ${formData.profileComplete ? 'text-[#1cd14f]' : 'text-[#F4A316]'}`}>
+                  {formData.profileComplete ? "Profile is Complete" : "Profile Incomplete"}
+                </p>
+              </>
+            )}
+          </div>
         </div>
-        <div>
-          {loading ? (
-            <div className="h-6 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-2"></div>
-          ) : (
-            <>
-              <h3 className="text-[19px] font-bold text-gray-900 dark:text-white leading-tight">{formData.username || "User"}</h3>
-              <p className={`text-[13px] font-medium mt-0.5 ${formData.profileComplete ? 'text-[#1cd14f]' : 'text-gray-500'}`}>
-                {formData.profileComplete ? "Profile is Complete" : "Profile Incomplete"}
-              </p>
-            </>
-          )}
+
+        <div className="flex items-center gap-2 pt-1">
+          <ThemeToggle />
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/" })}
+            className="p-2 rounded-full text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+            title="Sign Out"
+          >
+            <LogOutIcon />
+          </button>
         </div>
       </div>
+
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {updateError && (
@@ -296,7 +323,11 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
         >
           {isUpdating ? "Updating..." : "Update Profile"}
         </button>
+
       </form>
+
+
     </ModalOverlay>
+
   );
 }

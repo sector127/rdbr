@@ -75,7 +75,7 @@ interface Enrollment {
     title: string;
     image?: string;
     instructor: { name: string };
-    rating: number;
+    avgRating: number;
   };
   schedule: {
     weeklySchedule: { label: string };
@@ -97,6 +97,7 @@ export function EnrolledCoursesSidebar() {
   const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
   const [loading, setLoading] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [courseRatings, setCourseRatings] = useState<Record<number, number>>({});
 
   useEffect(() => {
     setMounted(true);
@@ -119,7 +120,26 @@ export function EnrolledCoursesSidebar() {
       })
         .then((res) => res.json())
         .then((data) => {
-          setEnrollments(data.data || []);
+          const fetchedEnrollments: Enrollment[] = data.data || [];
+          setEnrollments(fetchedEnrollments);
+          
+          // Fetch ratings for courses if not provided in the list
+          fetchedEnrollments.forEach((enr) => {
+            if (enr.course.avgRating) {
+              setCourseRatings(prev => ({ ...prev, [enr.course.id]: enr.course.avgRating }));
+            } else {
+              fetch(`${API_URL}/courses/${enr.course.id}`)
+                .then(res => res.json())
+                .then(courseData => {
+                  const reviews = courseData.data?.reviews || [];
+                  const avg = reviews.length > 0 
+                    ? reviews.reduce((sum: number, r: any) => sum + r.rating, 0) / reviews.length 
+                    : 0;
+                  setCourseRatings(prev => ({ ...prev, [enr.course.id]: avg }));
+                })
+                .catch(err => console.error(`Failed to fetch rating for course ${enr.course.id}:`, err));
+            }
+          });
         })
         .catch((err) => console.error("Failed to fetch enrollments:", err))
         .finally(() => setLoading(false));
@@ -201,7 +221,9 @@ export function EnrolledCoursesSidebar() {
                       <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400">Instructor <span className="text-zinc-900 dark:text-zinc-200">{enr.course.instructor.name}</span></span>
                       <div className="flex items-center gap-1">
                         <StarIcon />
-                        <span className="text-xs font-bold text-zinc-900 dark:text-white">{enr.course.rating}</span>
+                        <span className="text-xs font-bold text-zinc-900 dark:text-white">
+                          {(courseRatings[enr.course.id] || enr.course.avgRating || 0).toFixed(1)}
+                        </span>
                       </div>
                     </div>
                     

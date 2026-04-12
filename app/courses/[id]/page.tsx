@@ -193,6 +193,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
           {/* ── Right Column (sticky panel) ───────────────────────────────── */}
           <div className="lg:sticky lg:top-24">
             <CourseDetailPanel
+              key={course.enrollment?.id ?? "unspecified"}
               course={course}
               token={token}
               isLoggedIn={!!session}

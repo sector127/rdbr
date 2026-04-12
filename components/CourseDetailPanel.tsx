@@ -196,6 +196,9 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
   const [isCompleted, setIsCompleted] = useState((enrolled?.progress ?? 0) >= 100);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+  // ── Retake state ──────────────────────────────────────────────────────────
+  const [retaking, setRetaking] = useState(false);
+
   // ── Rating state ──────────────────────────────────────────────────────────
   const [ratingValue, setRatingValue] = useState(0);
   const [ratingHovered, setRatingHovered] = useState(0);
@@ -210,6 +213,15 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
       setShowRatingPopup(true);
     }
   }, [isCompleted, ratingDone]);
+
+  // Sync state with props on update (mostly for session/token changes or soft refreshes)
+  useEffect(() => {
+    if (course.enrollment) {
+      setProgress(course.enrollment.progress);
+      setIsCompleted(course.enrollment.progress >= 100);
+      setRatingDone(course.isRated);
+    }
+  }, [course]);
 
   // ── Fetch schedules on mount (if not enrolled) ────────────────────────────
   useEffect(() => {
@@ -335,8 +347,8 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
     if (!token) return;
     setCompleting(true);
     try {
-      const res = await fetch(`${API_URL}/courses/${course.id}/complete`, {
-        method: "POST",
+      const res = await fetch(`${API_URL}/enrollments/${enrolled?.id}/complete`, {
+        method: "PATCH",
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${token}`,
@@ -352,7 +364,29 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
     } finally {
       setCompleting(false);
     }
-  }, [course.id, token]);
+  }, [enrolled?.id, token]);
+
+  // ── Retake Course handler ─────────────────────────────────────────────────
+  const handleRetake = useCallback(async () => {
+    if (!token || !enrolled) return;
+    setRetaking(true);
+    try {
+      const res = await fetch(`${API_URL}/enrollments/${enrolled.id}`, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (res.ok) {
+        router.refresh();
+      }
+    } catch {
+      /* silent */
+    } finally {
+      setRetaking(false);
+    }
+  }, [enrolled, token, router]);
 
   // ── Rate Course handler ───────────────────────────────────────────────────
   const handleRate = useCallback(async (rating: number) => {
@@ -360,7 +394,7 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
     setRatingSubmitting(true);
     setRatingError("");
     try {
-      const res = await fetch(`${API_URL}/courses/${course.id}/rate`, {
+      const res = await fetch(`${API_URL}/courses/${course.id}/reviews`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -457,11 +491,12 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
             {/* Action Button */}
             {isCompleted ? (
               <button
-                onClick={() => { setProgress(0); setIsCompleted(false); }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[15px] transition-colors"
+                onClick={handleRetake}
+                disabled={retaking}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white font-semibold text-[15px] transition-colors"
               >
-                Retake Course
-                <RetakeIcon />
+                {retaking ? "Resetting..." : "Retake Course"}
+                {!retaking && <RetakeIcon />}
               </button>
             ) : (
               <button

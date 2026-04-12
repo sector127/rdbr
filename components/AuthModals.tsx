@@ -9,26 +9,19 @@ import Image from "next/image";
 import Link from "next/link";
 import { ProfileModal } from "./ProfileModal";
 
-const CloseIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 hover:text-gray-600">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
+const validateEmail = (email: string) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
 const EyeIcon = ({ visible }: { visible: boolean }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
     {visible ? (
       <>
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-        <line x1="3" y1="3" x2="21" y2="21" />
+        <path d="M1.05938 11.348C0.980208 11.1235 0.980208 10.8765 1.05938 10.652C1.83045 8.68365 3.13931 7.00069 4.82002 5.81644C6.50073 4.6322 8.47759 4 10.5 4C12.5224 4 14.4993 4.6322 16.18 5.81644C17.8607 7.00069 19.1695 8.68365 19.9406 10.652C20.0198 10.8765 20.0198 11.1235 19.9406 11.348C19.1695 13.3163 17.8607 14.9993 16.18 16.1836C14.4993 17.3678 12.5224 18 10.5 18C8.47759 18 6.50073 17.3678 4.82002 16.1836C3.13931 14.9993 1.83045 13.3163 1.05938 11.348Z" />
+        <path d="M10.5001 14.0005C12.0741 14.0005 13.35 12.6573 13.35 11.0003C13.35 9.34326 12.0741 8 10.5001 8C8.92619 8 7.65027 9.34326 7.65027 11.0003C7.65027 12.6573 8.92619 14.0005 10.5001 14.0005Z" />
       </>
     ) : (
-      <>
-        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-        <circle cx="12" cy="12" r="3" />
-      </>
+      <path d="M2 9C2.85907 9.9609 3.87049 10.7965 5 11.4785M5 11.4785C6.2165 12.2111 7.57462 12.7204 9 12.9785C10.3213 13.2128 11.6787 13.2128 13 12.9785C14.4254 12.7204 15.7835 12.2111 17 11.4785M5 11.4785L3.5 13.1538M20 9C19.1409 9.9609 18.1295 10.7965 17 11.4785M17 11.4785L18.5 13.1538M9 12.9775L8.5 15M13 12.9775L13.5 15" />
     )}
   </svg>
 );
@@ -47,11 +40,11 @@ function ModalOverlay({ children, onClose }: { children: React.ReactNode, onClos
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center p-4">
+    <div className="fixed inset-0 z-9999 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center p-4">
       <div className="absolute inset-0" onClick={onClose} />
       <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-[440px] p-8">
-        <button onClick={onClose} className="absolute top-4 right-4 p-1 z-10">
-          <CloseIcon />
+        <button onClick={onClose} className="absolute top-4 right-4 p-1 z-10 cursor-pointer">
+          <Image src="/icons/Close.svg" alt="Close" width={24} height={24} />
         </button>
         {children}
       </div>
@@ -84,6 +77,12 @@ function LoginModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: () =
     setError("");
 
     try {
+      if (!validateEmail(email)) {
+        setError("Please enter a valid email address.");
+        setLoading(false);
+        return;
+      }
+
       const res = await signIn("credentials", {
         redirect: false,
         email,
@@ -216,7 +215,17 @@ function RegisterModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: (
 
   const nextStep = (e: React.FormEvent) => {
     e.preventDefault();
-    if (step === 1 && (!formData.email || formData.email.length < 3)) return;
+    if (step === 1) {
+      if (!formData.email) {
+        setError("Email is required");
+        return;
+      }
+      if (!validateEmail(formData.email)) {
+        setError("Please enter a valid email address");
+        return;
+      }
+    }
+    setError("");
     if (step === 2) {
       if (!formData.username || formData.username.length < 3 || 
           !formData.password || formData.password.length < 3 || 
@@ -347,16 +356,21 @@ function RegisterModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: (
             </div>
             <div className="space-y-1.5">
               <label className="block text-sm font-medium text-[#3b4252] dark:text-gray-300">Confirm Password*</label>
-              <input
-                id="password_confirmation"
-                type="password"
-                required
-                minLength={3}
-                value={formData.password_confirmation}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2.5 text-gray-900 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="password_confirmation"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  minLength={3}
+                  value={formData.password_confirmation}
+                  onChange={handleInputChange}
+                  className="w-full pl-3 pr-10 py-2.5 text-gray-900 border border-gray-300 rounded-md dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                  placeholder="••••••••"
+                />
+                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setShowPassword(!showPassword)}>
+                  <EyeIcon visible={showPassword} />
+                </button>
+              </div>
             </div>
           </div>
         )}
