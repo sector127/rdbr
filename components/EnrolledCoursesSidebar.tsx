@@ -57,13 +57,6 @@ const StarIcon = () => (
   </svg>
 );
 
-const EmptyBoxIcon = () => (
-  <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-200 dark:text-zinc-800">
-    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-    <path d="m3.3 7 8.7 5 8.7-5" />
-    <path d="M12 22V12" />
-  </svg>
-);
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -176,18 +169,18 @@ export function EnrolledCoursesSidebar() {
       />
       
       {/* Sidebar */}
-      <div className={`absolute top-0 right-0 h-full w-full max-w-[550px] bg-[#f8f9fa] dark:bg-zinc-950 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
+      <div className={`absolute top-0 right-0 h-full w-full max-w-[794px] bg-[#f8f9fa] dark:bg-zinc-950 shadow-2xl transition-transform duration-300 ease-out flex flex-col ${isOpen ? "translate-x-0" : "translate-x-full"}`}>
         
         {/* Header */}
-        <div className="p-10 flex items-center justify-between bg-white dark:bg-zinc-900/50">
-          <div className="flex flex-col">
-            <h2 className="text-[32px] font-bold text-zinc-900 dark:text-white leading-tight">Enrolled Courses</h2>
-            <div className="flex items-center gap-2 mt-1">
-              <span className="text-zinc-500 dark:text-zinc-400 font-medium">Total Enrollments</span>
-              <span className="text-zinc-900 dark:text-white font-bold">{enrollments.length}</span>
+        <div className="relative p-10 flex items-center bg-white dark:bg-zinc-900/50">
+          <div className="w-full flex justify-between">
+            <h2 className="text-5xl font-semibold text-gray-950 dark:text-white leading-tight">Enrolled Courses</h2>
+            <div className="flex text-[16px] font-semibold items-center gap-2 mt-1">
+              <span className="text-gray-950 dark:text-zinc-400 font-medium">Total Enrollments</span>
+              <span className="text-gray-950 dark:text-white font-bold">{enrollments.length}</span>
             </div>
           </div>
-          <button onClick={closeSidebar} className="p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
+          <button onClick={closeSidebar} className="absolute top-5 right-5 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-full transition-colors">
             <CloseIcon />
           </button>
         </div>
@@ -238,7 +231,7 @@ export function EnrolledCoursesSidebar() {
                       </div>
                       <div className="flex items-center gap-2.5 text-[13px] text-zinc-500 dark:text-zinc-400">
                         <ClockIcon />
-                        <span>{enr.schedule.timeSlot.label} {enr.schedule.timeSlot.startTime} - {enr.schedule.timeSlot.endTime}</span>
+                        <span>{enr.schedule.timeSlot.label}</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-[13px] text-zinc-500 dark:text-zinc-400">
                         <UserIcon />
@@ -278,14 +271,14 @@ export function EnrolledCoursesSidebar() {
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center">
               <div className="mb-6 opacity-40">
-                <EmptyBoxIcon />
+                <Image src={"/icons/EmptyBox.svg"} alt="Empty Box" width={190} height={170} />
               </div>
-              <h3 className="text-xl font-bold text-indigo-950 dark:text-indigo-200 mb-2">No Enrolled Courses Yet</h3>
-              <p className="text-[#6b7280] dark:text-zinc-400 mb-8 max-w-[280px]">
+              <h3 className="text-2xl font-semibold text-indigo-800 dark:text-indigo-200 mb-2">No Enrolled Courses Yet</h3>
+              <p className="text-sm font-medium text-indigo-800 dark:text-zinc-400 mb-8 max-w-[280px]">
                 Your learning journey starts here! Browse courses to get started.
               </p>
               <Link href="/courses" onClick={closeSidebar}>
-                <Button variant="solid" className="px-12 py-3 bg-[#4c40f7] hover:bg-indigo-700">Browse Courses</Button>
+                <Button variant="solid" className="text-[16px] font-medium px-12 py-3 bg-[#4c40f7] hover:bg-indigo-700">Browse Courses</Button>
               </Link>
             </div>
           )}

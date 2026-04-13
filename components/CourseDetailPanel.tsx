@@ -12,73 +12,56 @@ import { ConflictError } from "@/types/conflictError";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.redclass.redberryinternship.ge/api";
 
-// ─── Icons ────────────────────────────────────────────────────────────────────
-
-const CalendarIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
-    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-    <line x1="16" y1="2" x2="16" y2="6" />
-    <line x1="8" y1="2" x2="8" y2="6" />
-    <line x1="3" y1="10" x2="21" y2="10" />
-  </svg>
+const MaskedIcon = ({ src, size = 20, className = "bg-zinc-500" }: { src: string; size?: number; className?: string }) => (
+  <div
+    className={`shrink-0 ${className}`}
+    style={{
+      width: `${size}px`,
+      height: `${size}px`,
+      maskImage: `url(${src})`,
+      maskSize: "contain",
+      maskRepeat: "no-repeat",
+      maskPosition: "center",
+      WebkitMaskImage: `url(${src})`,
+      WebkitMaskSize: "contain",
+      WebkitMaskRepeat: "no-repeat",
+      WebkitMaskPosition: "center",
+    }}
+  />
 );
 
-const ClockIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
-    <circle cx="12" cy="12" r="10" />
-    <polyline points="12 6 12 12 16 14" />
-  </svg>
-);
-
-const DesktopIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
-    <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
-    <line x1="8" y1="21" x2="16" y2="21" />
-    <line x1="12" y1="17" x2="12" y2="21" />
-  </svg>
-);
-
-const MapPinIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-500">
-    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-    <circle cx="12" cy="10" r="3" />
-  </svg>
-);
+const CalendarIcon = () => <MaskedIcon src="/icons/CalendarDots.svg" size={20} className="bg-zinc-500" />;
+const ClockIcon = () => <MaskedIcon src="/icons/Clock.svg" size={20} className="bg-zinc-500" />;
+const DesktopIcon = () => <MaskedIcon src="/icons/Desktop.svg" size={20} className="bg-zinc-500" />;
+const MapPinIcon = ({ className }: { className?: string }) => <MaskedIcon src="/icons/MapPin.svg" size={12} className={className || "bg-zinc-500"} />;
 
 const ChevronDownIcon = ({ open }: { open: boolean }) => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-    className={`text-zinc-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
-    <polyline points="6 9 12 15 18 9" />
-  </svg>
+  <div className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
+    <MaskedIcon src="/icons/Arrow.svg" size={20} className="bg-zinc-400" />
+  </div>
 );
 
-const CheckIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-    <polyline points="20 6 9 17 4 12" />
-  </svg>
-);
-
-const RetakeIcon = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-white">
-    <polyline points="23 4 23 10 17 10" />
-    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
-  </svg>
-);
-
-const WarningIcon = () => (
-  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-amber-500 shrink-0">
-    <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" />
-    <line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-
+const CheckIcon = () => <MaskedIcon src="/icons/Check.svg" size={18} className="bg-white" />;
+const RetakeIcon = () => <MaskedIcon src="/icons/Retake.svg" size={18} className="bg-white" />;
+const WarningIcon = () => <MaskedIcon src="/icons/Warning.svg" size={16} className="bg-amber-500 shrink-0" />;
 const CloseSmallIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-zinc-400 hover:text-zinc-600">
-    <line x1="18" y1="6" x2="6" y2="18" />
-    <line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
+  <div className="text-zinc-400 hover:text-zinc-600 transition-colors">
+    <MaskedIcon src="/icons/Close.svg" size={16} className="bg-current" />
+  </div>
 );
+
+
+const formatTimeString = (timeStr: string) => {
+  if (!timeStr) return "";
+  const parts = timeStr.split(':');
+  if (parts.length < 2) return timeStr;
+  const [h, m] = parts;
+  let hour = parseInt(h);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  hour = hour % 12;
+  hour = hour ? hour : 12;
+  return `${hour}:${m} ${ampm}`;
+};
 
 // ─── Star for rating ──────────────────────────────────────────────────────────
 
@@ -99,13 +82,11 @@ function RatingStar({ filled, onClick, onMouseEnter, onMouseLeave, size = 36, di
       onMouseLeave={onMouseLeave}
       className="transition-transform hover:scale-110 disabled:cursor-default"
     >
-      <svg width={size} height={size} viewBox="0 0 24 24"
-        fill={filled ? "#F5A623" : "none"}
-        stroke={filled ? "#F5A623" : "#D1D5DB"}
-        strokeWidth="1.5"
-      >
-        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-      </svg>
+      <MaskedIcon 
+        src="/icons/Rating.svg" 
+        size={size} 
+        className={filled ? "bg-[#F5A623]" : "bg-zinc-200 dark:bg-zinc-700"} 
+      />
     </button>
   );
 }
@@ -418,22 +399,21 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
     }
   }, [course.id, token]);
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <>
+    <div className="w-full shrink-0">
       {/* ── Enrolled View ────────────────────────────────────────────────── */}
       {isEnrolled && enrolled ? (
         <div className="flex flex-col gap-5">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+          <div className="bg-transparent dark:bg-zinc-900">
 
             {/* Status Badge */}
             <div className="mb-5">
               {isCompleted ? (
-                <span className="inline-block px-4 py-1.5 text-sm font-semibold rounded-md border-2 border-green-500 text-green-600">
+                <span className="h-[56px] inline-flex items-center justify-center px-4 py-1.5 text-xl font-semibold rounded-[100px] bg-green-500/10 text-green-400">
                   Completed
                 </span>
               ) : (
-                <span className="inline-block px-4 py-1.5 text-sm font-semibold rounded-md border-2 border-indigo-500 text-indigo-600">
+                <span className="h-[56px] inline-flex items-center justify-center px-4 py-1.5 text-xl font-semibold rounded-[100px] bg-indigo-500/10 text-indigo-400">
                   Enrolled
                 </span>
               )}
@@ -451,7 +431,7 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
                 <ClockIcon />
                 <span className="text-[14px] text-zinc-700 dark:text-zinc-300">
                   {enrolled.schedule?.timeSlot?.label
-                    ? `${enrolled.schedule.timeSlot.label} ${enrolled.schedule.timeSlot.startTime} - ${enrolled.schedule.timeSlot.endTime}`
+                    ? `${enrolled.schedule.timeSlot.label}`
                     : "—"}
                 </span>
               </div>
@@ -512,7 +492,7 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
 
           {/* Rating Popup (shown when completed) */}
           {showRatingPopup && !ratingDone && (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm relative">
+            <div className="bg-white dark:bg-zinc-900 b rounded-2xl p-5 relative">
               <button
                 onClick={() => setShowRatingPopup(false)}
                 className="absolute top-3 right-3 p-1"
@@ -557,10 +537,10 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
       ) : (
         /* ── Non-Enrolled View (Schedule Selection) ─────────────────────── */
         <div className="flex flex-col gap-4">
-          <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl shadow-sm divide-y divide-zinc-100 dark:divide-zinc-800">
+          <div className="bg-transparent dark:bg-zinc-900 rounded-2xl divide-y divide-zinc-100 dark:divide-zinc-800">
 
             {/* Step 1: Weekly Schedule */}
-            <div className="px-5">
+            <div className="">
               <AccordionSection
                 stepNum={1}
                 stepIcon={openStep === 1 ? "/icons/OneFill.svg" : "/icons/One.svg"}
@@ -575,20 +555,27 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
                 ) : schedules.length === 0 ? (
                   <p className="text-sm text-zinc-400">No schedule options available.</p>
                 ) : (
-                  <div className="flex flex-wrap gap-2.5">
+                  <div className="flex gap-2 text-xs">
                     {schedules.map((s) => {
                       const isActive = selectedSchedule?.id === s.id;
+                      const formattedLabel = s.label.split('-').map(p => {
+                        const trimmed = p.trim();
+                        if (trimmed.toLowerCase().includes('weekend')) {
+                          return trimmed.split(' ')[0];
+                        }
+                        return trimmed.substring(0, 3);
+                      }).join(' - ');
                       return (
                         <button
                           key={s.id}
                           onClick={() => handleSelectSchedule(s)}
-                          className={`px-4 py-3 rounded-lg border text-sm font-medium transition-all ${
+                          className={`p-5 rounded-xl border text-[15px] font-semibold transition-all ${
                             isActive
-                              ? "border-zinc-900 dark:border-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
-                              : "border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 hover:border-zinc-400 hover:text-zinc-600"
+                              ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500 text-indigo-700 dark:text-indigo-400 shadow-sm"
+                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 text-zinc-900 dark:text-zinc-100 hover:border-zinc-300 dark:hover:border-zinc-500 shadow-sm"
                           }`}
                         >
-                          {s.label}
+                          {formattedLabel}
                         </button>
                       );
                     })}
@@ -598,7 +585,7 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
             </div>
 
             {/* Step 2: Time Slot */}
-            <div className="px-5">
+            <div className="">
               <AccordionSection
                 stepNum={2}
                 stepIcon={openStep === 2 ? "/icons/TwoFill.svg" : "/icons/Two.svg"}
@@ -614,20 +601,51 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
                 ) : timeSlots.length === 0 && selectedSchedule ? (
                   <p className="text-sm text-zinc-400">No time slots available for this schedule.</p>
                 ) : (
-                  <div className="flex flex-wrap gap-2.5">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {timeSlots.map((slot) => {
                       const isActive = selectedTimeSlot?.id === slot.id;
+                      const displayName = slot.label.split("(")[0].trim();
+                      const formattedRange = `${formatTimeString(slot.startTime)} – ${formatTimeString(slot.endTime)}`;
+
+                      let iconPath = "/icons/Sun.svg";
+                      const labelLow = slot.label.toLowerCase();
+                      if (labelLow.includes("morning")) iconPath = "/icons/CloudSun.svg";
+                      else if (labelLow.includes("afternoon")) iconPath = "/icons/Sun.svg";
+                      else if (labelLow.includes("evening")) iconPath = "/icons/Moon.svg";
+
                       return (
                         <button
                           key={slot.id}
                           onClick={() => handleSelectTimeSlot(slot)}
-                          className={`px-4 py-3 rounded-lg border text-sm font-medium transition-all ${
+                          className={`flex items-center p-5 h-15 rounded-2xl border transition-all ${
                             isActive
-                              ? "border-zinc-900 dark:border-white bg-white dark:bg-zinc-800 text-zinc-900 dark:text-white shadow-sm"
-                              : "border-zinc-200 dark:border-zinc-700 text-zinc-400 dark:text-zinc-500 hover:border-zinc-400 hover:text-zinc-600"
+                              ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500 shadow-sm"
+                              : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-500 shadow-sm"
                           }`}
                         >
-                          {slot.label} ({slot.startTime} – {slot.endTime})
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-[26px] h-[26px] shrink-0 ${isActive ? "bg-indigo-600 dark:bg-indigo-400" : "bg-zinc-600 dark:bg-zinc-400"}`}
+                              style={{
+                                maskImage: `url(${iconPath})`,
+                                maskSize: "contain",
+                                maskRepeat: "no-repeat",
+                                maskPosition: "center",
+                                WebkitMaskImage: `url(${iconPath})`,
+                                WebkitMaskSize: "contain",
+                                WebkitMaskRepeat: "no-repeat",
+                                WebkitMaskPosition: "center",
+                              }}
+                            />
+                            <div className="flex flex-col items-start text-left">
+                              <span className={`font-medium text-sm ${isActive ? "text-indigo-700 dark:text-indigo-400" : "text-zinc-600 dark:text-zinc-200"}`}>
+                                {displayName}
+                              </span>
+                              <span className={`text-[10px] font-regular ${isActive ? "text-indigo-500 dark:text-indigo-500" : "text-zinc-500 dark:text-zinc-400"}`}>
+                                {formattedRange}
+                              </span>
+                            </div>
+                          </div>
                         </button>
                       );
                     })}
@@ -637,7 +655,7 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
             </div>
 
             {/* Step 3: Session Type */}
-            <div className="px-5">
+            <div className="">
               <AccordionSection
                 stepNum={3}
                 stepIcon={openStep === 3 ? "/icons/ThreeFill.svg" : "/icons/Three.svg"}
@@ -653,51 +671,81 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
                 ) : sessionTypes.length === 0 && selectedTimeSlot ? (
                   <p className="text-sm text-zinc-400">No session types available for this selection.</p>
                 ) : (
-                  <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {sessionTypes.map((st) => {
                       const isSelected = selectedSessionType?.id === st.id;
                       const isFullyBooked = st.availableSeats === 0;
                       const isLowSeats = st.availableSeats > 0 && st.availableSeats < 5;
                       const mod = parseFloat(st.priceModifier);
-                      const priceLabel = mod === 0 ? "Included" : `+$${mod}`;
+                      const priceLabel = mod === 0 ? "Included" : `+ $${mod}`;
+                      
+                      let iconPath = "/icons/Online.svg";
+                      if (st.name === "in_person") iconPath = "/icons/InPerson.svg";
+                      if (st.name === "hybrid") iconPath = "/icons/Hybrid.svg";
+
                       return (
-                        <button
-                          key={st.id}
-                          onClick={() => !isFullyBooked && setSelectedSessionType(st)}
-                          disabled={isFullyBooked}
-                          className={`w-full text-left px-4 py-3.5 rounded-xl border transition-all ${
-                            isFullyBooked
-                              ? "border-zinc-200 dark:border-zinc-800 opacity-50 cursor-not-allowed bg-zinc-50 dark:bg-zinc-900/50"
-                              : isSelected
-                              ? "border-zinc-900 dark:border-white bg-white dark:bg-zinc-800 shadow-sm"
-                              : "border-zinc-200 dark:border-zinc-700 hover:border-zinc-400"
-                          }`}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex flex-col">
-                              <span className="font-semibold text-sm text-zinc-900 dark:text-white">{sessionTypeName(st.name)}</span>
-                              {(st.name === "in_person" || st.name === "hybrid") && st.location && (
-                                <span className="text-xs text-zinc-400 flex items-center gap-1 mt-0.5">
-                                  <MapPinIcon /> {st.location}
-                                </span>
-                              )}
-                            </div>
-                            <div className="flex flex-col items-end gap-1">
-                              <span className={`text-sm font-bold ${mod === 0 ? "text-zinc-500" : "text-indigo-600 dark:text-indigo-400"}`}>
-                                {priceLabel}
+                        <div key={st.id} className="flex flex-col gap-2">
+                          <button
+                            onClick={() => !isFullyBooked && setSelectedSessionType(st)}
+                            disabled={isFullyBooked}
+                            className={`flex flex-col items-center justify-center py-[15px] px-5 rounded-2xl border transition-all ${
+                              isFullyBooked
+                                ? "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900/50 opacity-60 cursor-not-allowed"
+                                : isSelected
+                                ? "border-indigo-400 dark:border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 shadow-sm"
+                                : "border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 hover:border-zinc-300 dark:hover:border-zinc-500 shadow-sm"
+                            }`}
+                          >
+                            <div
+                              className={`w-[26px] h-[26px] ${isSelected ? "bg-indigo-600 dark:bg-indigo-400" : "bg-zinc-600 dark:bg-zinc-400"} mb-[6px]`}
+                              style={{
+                                maskImage: `url(${iconPath})`,
+                                maskSize: "contain",
+                                maskRepeat: "no-repeat",
+                                maskPosition: "center",
+                                WebkitMaskImage: `url(${iconPath})`,
+                                WebkitMaskSize: "contain",
+                                WebkitMaskRepeat: "no-repeat",
+                                WebkitMaskPosition: "center",
+                              }}
+                            />
+                            <span className={`font-semibold text-[16px] ${isSelected ? "text-indigo-700 dark:text-indigo-400" : "text-zinc-600 dark:text-zinc-200"}`}>
+                              {sessionTypeName(st.name)}
+                            </span>
+                            
+                            {st.name === "online" ? (
+                              <span className={`text-[12px] font-regular mt-1 ${isSelected ? "text-indigo-500" : "text-zinc-500 dark:text-zinc-400"}`}>
+                                {st.location || "Google Meet"}
                               </span>
-                              {isFullyBooked ? (
-                                <span className="text-xs font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">Fully Booked</span>
-                              ) : isLowSeats ? (
-                                <span className="text-xs font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 px-2 py-0.5 rounded-full">
-                                  Only {st.availableSeats} seats left!
+                            ) : (
+                              <span className={`text-[12px] font-regular mt-1 flex items-center gap-1 ${isSelected ? "text-indigo-500 dark:text-indigo-400" : "text-zinc-500 dark:text-zinc-400"}`}>
+                                <MapPinIcon className={isSelected ? "text-indigo-500 dark:text-indigo-400" : "text-zinc-500 dark:text-zinc-400"} /> 
+                                {st.location || "Chavchavadze St.34"}
+                              </span>
+                            )}
+
+                            <span className={`text-[14px] font-medium mt-3 ${isSelected ? "text-indigo-600 dark:text-indigo-400" : "text-indigo-500 dark:text-indigo-500"}`}>
+                              {priceLabel}
+                            </span>
+                          </button>
+
+                          <div className="text-center flex justify-center items-center gap-1 mt-0.5">
+                            {isFullyBooked ? (
+                              <span className="text-[13px] font-medium text-zinc-500 dark:text-zinc-500">No Seats Available</span>
+                            ) : isLowSeats ? (
+                              <>
+                                <WarningIcon />
+                                <span className="text-xs font-medium text-amber-500 dark:text-amber-400">
+                                  Only {st.availableSeats} Seats Remaining
                                 </span>
-                              ) : (
-                                <span className="text-xs text-zinc-400">{st.availableSeats} seats</span>
-                              )}
-                            </div>
+                              </>
+                            ) : (
+                              <span className="text-[13px] font-medium text-zinc-800 dark:text-zinc-300">
+                                {st.availableSeats} Seats Available
+                              </span>
+                            )}
                           </div>
-                        </button>
+                        </div>
                       );
                     })}
                   </div>
@@ -755,9 +803,9 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
               </div>
               <a
                 href="?auth=profile"
-                className="shrink-0 ml-3 px-4 py-2 text-sm font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors flex items-center gap-1"
+                className="shrink-0 ml-3 px-4 py-2 text-sm font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors flex items-center gap-2"
               >
-                Complete <span>→</span>
+                Complete <MaskedIcon src="/icons/ArrowRight.svg" size={14} className="bg-current" />
               </a>
             </div>
           )}
@@ -776,9 +824,9 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
               </div>
               <a
                 href="?auth=login"
-                className="shrink-0 ml-3 px-4 py-2 text-sm font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors flex items-center gap-1"
+                className="shrink-0 ml-3 px-4 py-2 text-sm font-semibold text-indigo-600 border border-indigo-200 rounded-lg hover:bg-indigo-50 transition-colors flex items-center gap-2"
               >
-                Sign In <span>→</span>
+                Sign In <MaskedIcon src="/icons/ArrowRight.svg" size={14} className="bg-current" />
               </a>
             </div>
           )}
@@ -843,6 +891,6 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
           </div>
         </Portal>
       )}
-    </>
+    </div>
   );
 }

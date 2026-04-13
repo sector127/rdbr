@@ -1,12 +1,11 @@
 import { notFound } from "next/navigation";
-import { getServerSession } from "next-auth";
+import { getFreshProfile } from "@/lib/profile";
 import Image from "next/image";
 import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseDetailPanel } from "@/components/CourseDetailPanel";
 import { CategoryIcon } from "@/components/CategoryIcon";
-import { authOptions } from "@/lib/auth";
 import { CourseDetail } from "@/types/courseDetail";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.redclass.redberryinternship.ge/api";
@@ -48,17 +47,10 @@ function StarRatingDisplay({ rating }: { rating: number | null }) {
 
 export default async function CourseDetailPage({ params }: PageProps) {
   const { id } = await params;
-  const session = await getServerSession(authOptions);
+  const { session, token, user, profileComplete } = await getFreshProfile();
+  const userData = user;
 
-  const token =
-    (session?.user as any)?.token ||
-    (session?.user as any)?.access_token ||
-    (session?.user as any)?.data?.token ||
-    null;
-
-  const profileComplete =
-    !!session?.user?.data?.user?.fullName ||
-    !!session?.user?.data?.user?.profileComplete;
+  console.log(userData);
 
   const course = await getCourse(id, token);
 
@@ -88,7 +80,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
       </div>
 
       <main className="flex-1 w-full max-w-[1566px] mx-auto px-4 lg:px-8 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_330px] gap-10 items-start">
+        <div className="flex justify-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[900px_546px] gap-10 items-start">
 
           {/* ── Left Column ──────────────────────────────────────────────── */}
           <div className="flex flex-col gap-6">
@@ -197,6 +190,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
               isLoggedIn={!!session}
               profileComplete={profileComplete}
             />
+          </div>
           </div>
         </div>
       </main>

@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useSession, signOut } from "next-auth/react";
 
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { ThemeToggle } from "./ThemeToggle";
+import { fetchUserData } from "@/lib/api";
 
 
 const CloseIcon = () => (
@@ -97,23 +98,34 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
+  const [isAgeOpen, setIsAgeOpen] = useState(false);
+  const ageDropdownRef = useRef<HTMLDivElement>(null);
+
+  const ages = Array.from({ length: 84 }, (_, i) => (16 + i).toString());
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ageDropdownRef.current && !ageDropdownRef.current.contains(event.target as Node)) {
+        setIsAgeOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     async function fetchProfile() {
       const token = (session?.user as any)?.token || (session?.user as any)?.access_token || (session?.user as any)?.data?.token;
 
-      try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/me`, {
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            ...(token ? { "Authorization": `Bearer ${token}` } : {})
-          }
-        });
+      if (!token) {
+        setLoading(false);
+        return;
+      }
 
-        if (res.ok) {
-          const json = await res.json();
-          const d = json.data;
+      try {
+        const d = await fetchUserData(token);
+
+        if (d) {
           setFormData(prev => ({
             ...prev,
             username: d.username || "",
@@ -138,6 +150,8 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
       setLoading(false);
     }
   }, [session]);
+
+  console.log(formData);
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -287,19 +301,43 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
 
           <div className="space-y-1.5 flex-1">
             <label className="block text-sm font-medium text-[#3b4252] dark:text-gray-300">Age</label>
-            <div className="relative">
-              <select
-                value={formData.age}
-                onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
-                className="w-full pl-3 pr-8 py-2.5 text-gray-400 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4C40F7] focus:border-[#4C40F7] appearance-none dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300 cursor-pointer"
+            <div className="relative" ref={ageDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setIsAgeOpen(!isAgeOpen)}
+                className={`w-full flex items-center justify-between pl-3 pr-4 py-2.5 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4C40F7] focus:border-[#4C40F7] dark:bg-gray-800 dark:border-gray-700 transition-all ${isAgeOpen ? 'ring-1 ring-[#4C40F7] border-[#4C40F7]' : ''}`}
               >
-                <option value="28">28</option>
-                <option value="29">29</option>
-                <option value="30">30</option>
-              </select>
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                <ChevronDownIcon />
-              </div>
+                <span className={`text-sm ${formData.age ? "text-[#3b4252] dark:text-gray-200" : "text-gray-400"}`}>
+                  {formData.age || "Select Age"}
+                </span>
+                <div className={`transition-transform duration-200 ${isAgeOpen ? 'rotate-180' : ''}`}>
+                  <ChevronDownIcon />
+                </div>
+              </button>
+
+              {isAgeOpen && (
+                <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-200">
+                  <div className="py-1">
+                    {ages.map((age) => (
+                      <button
+                        key={age}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, age }));
+                          setIsAgeOpen(false);
+                        }}
+                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
+                          formData.age === age 
+                            ? "bg-[#F5F3FF] text-[#4C40F7] font-semibold dark:bg-[#4C40F7]/10" 
+                            : "text-[#3b4252] dark:text-gray-300"
+                        }`}
+                      >
+                        {age}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
