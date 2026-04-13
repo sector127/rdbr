@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./Button";
+import { CategoryIcon } from "./CategoryIcon";
 
 export interface CourseCardProps {
   id?: number;
@@ -125,10 +126,7 @@ app.get('/', (req, res) => {
         {category && (
           <div className="mb-4">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-zinc-100 dark:bg-zinc-800 text-xs font-medium text-zinc-600 dark:text-zinc-300">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="16 18 22 12 16 6"></polyline>
-                <polyline points="8 6 2 12 8 18"></polyline>
-              </svg>
+              <CategoryIcon categoryName={category} className="w-3 h-3" />
               {category}
             </span>
           </div>

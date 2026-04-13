@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { CourseDetailPanel } from "@/components/CourseDetailPanel";
+import { CategoryIcon } from "@/components/CategoryIcon";
 import { authOptions } from "@/lib/auth";
 import { CourseDetail } from "@/types/courseDetail";
 
@@ -147,10 +148,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
                 {/* Category */}
                 {course.category?.name && (
                   <div className="flex items-center gap-1.5 text-sm text-zinc-600 dark:text-zinc-400">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
-                      <polyline points="16 18 22 12 16 6" />
-                      <polyline points="8 6 2 12 8 18" />
-                    </svg>
+                    <CategoryIcon categoryName={course.category.name} className="w-4 h-4" />
                     {course.category.name}
                   </div>
                 )}

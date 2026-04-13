@@ -48,7 +48,7 @@ async function getCoursesData(params: {
   const query = new URLSearchParams();
   if (params.page) query.append('page', params.page);
   if (params.sort) query.append('sort', params.sort);
-  
+
   params.categories?.forEach(id => query.append('categories[]', id));
   params.topics?.forEach(id => query.append('topics[]', id));
   params.instructors?.forEach(id => query.append('instructors[]', id));
@@ -72,17 +72,17 @@ export default async function CoursesPage({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const resolvedParams = await searchParams;
-  
+
   // Parse search params
   const page = typeof resolvedParams.page === 'string' ? resolvedParams.page : '1';
   const sort = typeof resolvedParams.sort === 'string' ? resolvedParams.sort : 'newest';
-  
+
   const categoriesParam = resolvedParams['categories[]'] || resolvedParams.categories;
   const categories = Array.isArray(categoriesParam) ? categoriesParam : (categoriesParam ? [categoriesParam] : []);
-  
+
   const topicsParam = resolvedParams['topics[]'] || resolvedParams.topics;
   const topics = Array.isArray(topicsParam) ? topicsParam : (topicsParam ? [topicsParam] : []);
-  
+
   const instructorsParam = resolvedParams['instructors[]'] || resolvedParams.instructors;
   const instructors = Array.isArray(instructorsParam) ? instructorsParam : (instructorsParam ? [instructorsParam] : []);
 
@@ -116,7 +116,7 @@ export default async function CoursesPage({
   return (
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-black font-sans">
       <Header />
-      
+
       <div className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
         <div className="max-w-[1566px] mx-auto px-4 lg:px-8 py-5">
           <div className="flex gap-2 text-sm text-zinc-500 font-medium">
@@ -143,7 +143,7 @@ export default async function CoursesPage({
           }}
         />
       </main>
-      
+
       <Footer />
     </div>
   );

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { FiltersSidebar, FilterItem, TopicItem, InstructorItem } from "./FiltersSidebar";
 import { CoursesGrid, SortMethod } from "./CoursesGrid";
 import { CourseCard } from "./CourseCard";
+import { CatalogCourseCard } from "./CatalogCourseCard";
 import { Course, PaginationMeta } from "@/types/course";
 
 interface CoursesCatalogProps {
@@ -140,7 +141,7 @@ export function CoursesCatalog({
         onPageChange={(page) => updateUrl({ page })}
       >
         {courses.map(course => (
-          <CourseCard
+          <CatalogCourseCard
             key={`catalog-course-${course.id}`}
             id={course.id}
             title={course.title}
@@ -148,10 +149,8 @@ export function CoursesCatalog({
             rating={course.avgRating || 0}
             price={Number(course.basePrice)}
             imageUrl={course.image}
-            description={course.description}
             category={course.category?.name}
             durationWeeks={course.durationWeeks}
-            hideDescription={true}
           />
         ))}
       </CoursesGrid>
