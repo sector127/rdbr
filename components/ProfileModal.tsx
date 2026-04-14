@@ -90,28 +90,54 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
     email: "",
     mobilePrefix: "+995",
     mobileNumber: "",
-    age: "29",
+    age: "",
     avatar: "",
     avatarPreview: "",
     profileComplete: false
   });
+  const [touched, setTouched] = useState<Partial<Record<keyof typeof formData, boolean>>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof typeof formData, string>>>({});
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateError, setUpdateError] = useState("");
-  const [isAgeOpen, setIsAgeOpen] = useState(false);
-  const ageDropdownRef = useRef<HTMLDivElement>(null);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
 
-  const ages = Array.from({ length: 84 }, (_, i) => (16 + i).toString());
+  const validate = (data = formData) => {
+    const errs: Partial<Record<keyof typeof formData, string>> = {};
+
+    const name = data.fullName || "";
+    if (!name.trim()) errs.fullName = "Name is required";
+    else if (name.trim().length < 3) errs.fullName = "Name must be at least 3 characters";
+    else if (name.trim().length > 50) errs.fullName = "Name must not exceed 50 characters";
+
+    const mobileStr = (data.mobileNumber || "").replace(/\s/g, "");
+    if (!mobileStr) {
+      errs.mobileNumber = "Mobile number is required";
+    } else if (!/^\d+$/.test(mobileStr)) {
+      errs.mobileNumber = "Please enter a valid Georgian mobile number (9 digits starting with 5)";
+    } else if (!mobileStr.startsWith("5")) {
+      errs.mobileNumber = "Georgian mobile numbers must start with 5";
+    } else if (mobileStr.length !== 9) {
+      errs.mobileNumber = "Mobile number must be exactly 9 digits";
+    }
+
+    const ageValue = data.age;
+    if (!ageValue) {
+      errs.age = "Age is required";
+    } else {
+      const parsedAge = Number(ageValue);
+      if (isNaN(parsedAge)) errs.age = "Age must be a number";
+      else if (parsedAge < 16) errs.age = "You must be at least 16 years old to enroll";
+      else if (parsedAge > 120) errs.age = "Please enter a valid age";
+    }
+    return errs;
+  };
 
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (ageDropdownRef.current && !ageDropdownRef.current.contains(event.target as Node)) {
-        setIsAgeOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
+    setErrors(validate(formData));
+  }, [formData]);
+
+// Age dropdown tracking removed
 
   useEffect(() => {
     async function fetchProfile() {
@@ -151,8 +177,6 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
     }
   }, [session]);
 
-  console.log(formData);
-
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -161,8 +185,27 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
     }
   };
 
+  const handleBlur = (field: keyof typeof formData) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
+  const handleCloseAttempt = () => {
+    const errs = validate(formData);
+    if (Object.keys(errs).length > 0 && !formData.profileComplete) {
+      setShowCloseConfirm(true);
+    } else {
+      onClose();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const currErrs = validate(formData);
+    if (Object.keys(currErrs).length > 0) {
+      setTouched({ fullName: true, mobileNumber: true, age: true });
+      return;
+    }
+    
     setIsUpdating(true);
     setUpdateError("");
 
@@ -170,11 +213,11 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
 
     try {
       const payload = new FormData();
-      payload.append("full_name", formData.fullName);
-      payload.append("email", formData.email);
-      if (formData.mobileNumber) {
-        payload.append("mobile_number", formData.mobileNumber);
-      }
+      payload.append("full_name", formData.fullName.trim());
+      // we don't append email because it's read-only
+      
+      const mobileStripped = formData.mobileNumber.replace(/\s/g, "");
+      payload.append("mobile_number", mobileStripped);
       payload.append("age", formData.age);
       if (avatarFile) {
         payload.append("avatar", avatarFile);
@@ -203,11 +246,32 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
     }
   };
 
-  return (
-    <ModalOverlay onClose={onClose}>
-      <h2 className="text-[28px] font-bold text-center text-gray-900 dark:text-white mb-8">Profile</h2>
+  const hasErrors = Object.keys(errors).length > 0;
 
-      <div className="flex items-start justify-between mb-8">
+  return (
+    <>
+      <ModalOverlay onClose={handleCloseAttempt}>
+        <div className="flex items-center justify-between mb-8">
+          <h2 className="text-[28px] font-bold text-gray-900 dark:text-white flex items-center gap-3">
+            Profile 
+            {(formData.profileComplete && !hasErrors) && (
+              <span className="text-[13px] inline-flex items-center gap-1 font-bold text-[#1cd14f] bg-[#1cd14f]/10 px-2.5 py-1 rounded-full whitespace-nowrap">
+                Complete <CheckIcon />
+              </span>
+            )}
+          </h2>
+          <div className="flex items-center gap-2 pr-8">
+            <ThemeToggle />
+            <button
+              type="button"
+              onClick={() => signOut({ callbackUrl: "/" })}
+              className="p-2 rounded-full text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+              title="Sign Out"
+            >
+              <LogOutIcon />
+            </button>
+          </div>
+        </div>
         <div className="flex items-center gap-4">
           <div className="relative w-16 h-16 shrink-0">
             <img
@@ -215,7 +279,7 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
               alt="Profile Avatar"
               className="w-full h-full rounded-full object-cover border border-gray-100 dark:border-gray-700"
             />
-            <div className={`absolute bottom-0 right-0 w-[14px] h-[14px] border-2 border-white dark:border-gray-900 rounded-full ${formData.profileComplete ? 'bg-[#1cd14f]' : 'bg-[#F4A316]'}`}></div>
+            <div className={`absolute bottom-0 right-0 w-[14px] h-[14px] border-2 border-white dark:border-gray-900 rounded-full ${(!hasErrors && formData.profileComplete) ? 'bg-[#1cd14f]' : 'bg-[#F4A316]'}`}></div>
           </div>
           <div>
             {loading ? (
@@ -223,26 +287,13 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
             ) : (
               <>
                 <h3 className="text-[19px] font-bold text-gray-900 dark:text-white leading-tight">{formData.fullName || "User"}</h3>
-                <p className={`text-[13px] font-medium mt-0.5 ${formData.profileComplete ? 'text-[#1cd14f]' : 'text-[#F4A316]'}`}>
-                  {formData.profileComplete ? "Profile is Complete" : "Profile Incomplete"}
+                <p className={`text-[13px] font-medium mt-0.5 ${(!hasErrors && formData.profileComplete) ? 'text-[#1cd14f]' : 'text-[#F4A316]'}`}>
+                  {(!hasErrors && formData.profileComplete) ? "Profile is Complete" : "Profile Incomplete"}
                 </p>
               </>
             )}
           </div>
         </div>
-
-        <div className="flex items-center gap-2 pt-1">
-          <ThemeToggle />
-          <button
-            type="button"
-            onClick={() => signOut({ callbackUrl: "/" })}
-            className="p-2 rounded-full text-zinc-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
-            title="Sign Out"
-          >
-            <LogOutIcon />
-          </button>
-        </div>
-      </div>
 
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -258,13 +309,23 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
             <input
               type="text"
               value={formData.fullName}
+              onBlur={() => handleBlur("fullName")}
               onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-              className="w-full pl-3 pr-10 py-2.5 text-gray-400 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4C40F7] focus:border-[#4C40F7] dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+              className={`w-full pl-3 pr-10 py-2.5 text-gray-900 bg-gray-50 border rounded-md focus:outline-none focus:ring-1 dark:bg-gray-800 dark:text-gray-300 ${
+                touched.fullName && errors.fullName
+                  ? "border-red-500 focus:ring-red-500 focus:border-red-500" 
+                  : touched.fullName && !errors.fullName
+                  ? "border-green-500 focus:ring-green-500 focus:border-green-500"
+                  : "border-gray-300 dark:border-gray-700 focus:ring-[#4C40F7] focus:border-[#4C40F7]"
+              }`}
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <PencilIcon />
-            </div>
+            {touched.fullName && !errors.fullName && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-green-500">
+                <CheckIcon />
+              </div>
+            )}
           </div>
+          {touched.fullName && errors.fullName && <p className="text-xs text-red-500 mt-1">{errors.fullName}</p>}
         </div>
 
         <div className="space-y-1.5">
@@ -273,72 +334,65 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
             <input
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-              className="w-full pl-3 pr-10 py-2.5 text-gray-400 bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4C40F7] focus:border-[#4C40F7] dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+              disabled
+              className="w-full pl-3 pr-10 py-2.5 text-gray-400 bg-gray-100 border border-gray-300 rounded-md focus:outline-none dark:bg-gray-800 dark:border-gray-700 dark:text-gray-500 cursor-not-allowed opacity-80"
             />
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-              <CheckIcon />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
             </div>
           </div>
         </div>
 
         <div className="flex gap-3">
-          <div className="space-y-1.5 flex-2">
+          <div className="space-y-1.5 flex-[2]">
             <label className="block text-sm font-medium text-[#3b4252] dark:text-gray-300">Mobile Number</label>
-            <div className="relative flex items-center bg-white border border-gray-300 rounded-md overflow-hidden dark:bg-gray-800 dark:border-gray-700 focus-within:ring-1 focus-within:ring-[#4C40F7] focus-within:border-[#4C40F7]">
+            <div className={`relative flex items-center bg-white border rounded-md overflow-hidden dark:bg-gray-800 focus-within:ring-1 ${
+              touched.mobileNumber && errors.mobileNumber
+                ? "border-red-500 focus-within:ring-red-500 focus-within:border-red-500"
+                : touched.mobileNumber && !errors.mobileNumber
+                ? "border-green-500 focus-within:ring-green-500 focus-within:border-green-500"
+                : "border-gray-300 dark:border-gray-700 focus-within:ring-[#4C40F7] focus-within:border-[#4C40F7]"
+            }`}>
               <div className="pl-3 pr-1 text-gray-400/70 font-medium">+995</div>
               <input
                 type="text"
                 value={formData.mobileNumber}
+                onBlur={() => handleBlur("mobileNumber")}
                 onChange={(e) => setFormData(prev => ({ ...prev, mobileNumber: e.target.value }))}
-                className="w-full py-2.5 text-gray-400 bg-transparent focus:outline-none dark:text-gray-300"
+                className="w-full py-2.5 text-gray-900 bg-transparent focus:outline-none dark:text-gray-300"
               />
-              <div className="pr-3 text-gray-300 pointer-events-none">
-                <CheckIcon />
-              </div>
+              {touched.mobileNumber && !errors.mobileNumber && (
+                <div className="pr-3 pointer-events-none text-green-500">
+                  <CheckIcon />
+                </div>
+              )}
             </div>
+            {touched.mobileNumber && errors.mobileNumber && <p className="text-xs text-red-500 mt-1">{errors.mobileNumber}</p>}
           </div>
 
           <div className="space-y-1.5 flex-1">
             <label className="block text-sm font-medium text-[#3b4252] dark:text-gray-300">Age</label>
-            <div className="relative" ref={ageDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsAgeOpen(!isAgeOpen)}
-                className={`w-full flex items-center justify-between pl-3 pr-4 py-2.5 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4C40F7] focus:border-[#4C40F7] dark:bg-gray-800 dark:border-gray-700 transition-all ${isAgeOpen ? 'ring-1 ring-[#4C40F7] border-[#4C40F7]' : ''}`}
-              >
-                <span className={`text-sm ${formData.age ? "text-[#3b4252] dark:text-gray-200" : "text-gray-400"}`}>
-                  {formData.age || "Select Age"}
-                </span>
-                <div className={`transition-transform duration-200 ${isAgeOpen ? 'rotate-180' : ''}`}>
-                  <ChevronDownIcon />
-                </div>
-              </button>
-
-              {isAgeOpen && (
-                <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto animate-in fade-in slide-in-from-top-1 duration-200">
-                  <div className="py-1">
-                    {ages.map((age) => (
-                      <button
-                        key={age}
-                        type="button"
-                        onClick={() => {
-                          setFormData(prev => ({ ...prev, age }));
-                          setIsAgeOpen(false);
-                        }}
-                        className={`w-full text-left px-4 py-2.5 text-sm transition-colors hover:bg-gray-50 dark:hover:bg-gray-700/50 ${
-                          formData.age === age 
-                            ? "bg-[#F5F3FF] text-[#4C40F7] font-semibold dark:bg-[#4C40F7]/10" 
-                            : "text-[#3b4252] dark:text-gray-300"
-                        }`}
-                      >
-                        {age}
-                      </button>
-                    ))}
-                  </div>
+            <div className="relative">
+              <input
+                type="number"
+                value={formData.age}
+                onBlur={() => handleBlur("age")}
+                onChange={(e) => setFormData(prev => ({ ...prev, age: e.target.value }))}
+                className={`w-full pl-3 pr-8 py-2.5 text-gray-900 bg-white border rounded-md focus:outline-none focus:ring-1 dark:bg-gray-800 dark:text-gray-300 ${
+                  touched.age && errors.age
+                    ? "border-red-500 focus:ring-red-500 focus:border-red-500" 
+                    : touched.age && !errors.age
+                    ? "border-green-500 focus:ring-green-500 focus:border-green-500"
+                    : "border-gray-300 dark:border-gray-700 focus:ring-[#4C40F7] focus:border-[#4C40F7]"
+                }`}
+              />
+              {touched.age && !errors.age && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-green-500">
+                  <CheckIcon />
                 </div>
               )}
             </div>
+            {touched.age && errors.age && <p className="text-xs text-red-500 mt-1">{errors.age}</p>}
           </div>
         </div>
 
@@ -356,16 +410,52 @@ export function ProfileModal({ onClose }: { onClose: () => void }) {
 
         <button
           type="submit"
-          disabled={isUpdating}
-          className="w-full bg-[#4C40F7] hover:bg-[#3b32d9] text-white py-3.5 rounded-md font-medium transition-colors mt-8 disabled:opacity-70"
+          disabled={isUpdating || hasErrors}
+          className="w-full bg-[#4C40F7] hover:bg-[#3b32d9] text-white py-3.5 rounded-md font-medium transition-colors mt-8 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isUpdating ? "Updating..." : "Update Profile"}
+          {isUpdating ? "Saving..." : "Save Profile"}
         </button>
 
       </form>
+      </ModalOverlay>
 
+      {/* Confirmation Modal for closing when incomplete */}
+      {showCloseConfirm && (
+        <div className="fixed inset-0 z-10000 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <div className="w-12 h-12 rounded-full bg-amber-100 text-amber-500 dark:bg-amber-900/30 flex items-center justify-center mx-auto mb-4">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Profile Incomplete</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+              Your profile is incomplete. You won't be able to enroll in courses until you complete it. Close anyway?
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCloseConfirm(false)}
+                className="flex-1 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              >
+                No, go back
+              </button>
+              <button
+                onClick={() => {
+                  setShowCloseConfirm(false);
+                  onClose();
+                }}
+                className="flex-1 py-2.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold transition-colors"
+              >
+                Yes, close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
-    </ModalOverlay>
+    </>
 
   );
 }

@@ -117,8 +117,8 @@ export default async function CoursesPage({
     <div className="min-h-screen flex flex-col bg-gray-100 dark:bg-black font-sans">
       <Header />
 
-      <div className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="max-w-[1566px] mx-auto px-4 lg:px-8 py-5">
+      <div className="bg-transparent">
+        <div className="max-w-[1566px] mx-auto py-5">
           <div className="flex gap-2 text-sm text-zinc-500 font-medium">
             <a href="/" className="hover:text-indigo-600 transition-colors">Home</a>
             <span className="text-zinc-300 dark:text-zinc-700">›</span>
@@ -127,7 +127,7 @@ export default async function CoursesPage({
         </div>
       </div>
 
-      <main className="flex-1 w-full max-w-[1566px] mx-auto px-4 lg:px-8 py-10 pb-section">
+      <main className="flex-1 w-full max-w-[1566px] mx-auto py-10 pb-section">
         <CoursesCatalog
           courses={coursesResult.courses}
           paginationMeta={coursesResult.meta}

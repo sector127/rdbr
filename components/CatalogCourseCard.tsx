@@ -25,7 +25,8 @@ export function CatalogCourseCard({
   durationWeeks
 }: CatalogCourseCardProps) {
   return (
-    <div className="group flex flex-col bg-white dark:bg-zinc-900 rounded-[24px] border border-zinc-200 dark:border-zinc-800 shadow-sm transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+    <div className="relative group flex flex-col bg-white dark:bg-zinc-900 rounded-2xl transition-all duration-300 hover:shadow-xl hover:-translate-y-1 overflow-hidden">
+      <Link href={`/courses/${id}`} className="absolute inset-0 z-10"><span className="sr-only">View course details</span></Link>
       {/* Image Container */}
       <div className="p-4 pb-0">
         <div className="relative aspect-16/10 w-full rounded-[18px] overflow-hidden bg-zinc-100 dark:bg-zinc-800 shadow-inner">
@@ -94,11 +95,13 @@ export function CatalogCourseCard({
               ${price}
             </span>
           </div>
-          <Link href={`/courses/${id}`}>
-            <Button className="h-[54px] px-8 rounded-[16px] text-[18px] font-bold bg-[#4F46E5] hover:bg-[#4338CA] shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
-              Details
-            </Button>
-          </Link>
+          <div className="relative z-20">
+            <Link href={`/courses/${id}`}>
+              <Button className="h-[54px] px-8 rounded-[16px] text-[18px] font-bold bg-[#4F46E5] hover:bg-[#4338CA] shadow-lg shadow-indigo-500/20 active:scale-[0.98]">
+                Details
+              </Button>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

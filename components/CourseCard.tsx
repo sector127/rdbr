@@ -24,7 +24,7 @@ export function CourseCard({ id, title, lecturer, rating, price, imageUrl, blurr
 
   if (isHorizontal) {
     return (
-      <div className={`flex flex-col bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-sm p-4 md:p-5 gap-5 transition-all hover:shadow-md ${blurred ? 'blur-sm opacity-65 pointer-events-none' : ''}`}>
+      <div className={`flex flex-col bg-white dark:bg-zinc-900 rounded-2xl p-4 md:p-5 gap-5 transition-all hover:shadow-md ${blurred ? 'blur-sm opacity-65 pointer-events-none' : ''}`}>
         {/* Left: Thumbnail image */}
         <div className="flex gap-4">
         <div className="relative w-[140px] h-[123px] shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
@@ -74,8 +74,8 @@ export function CourseCard({ id, title, lecturer, rating, price, imageUrl, blurr
               </div>
             </div>
             <Link href={`/courses/${id || '#'}`}>
-              <Button variant="outline" className="px-7 py-2 w-[90px] h-[48px] border-indigo-400 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 rounded-xl">
-                View
+              <Button variant="outline" className="px-7 py-2 min-w-[100px] h-[48px] border-indigo-400 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 rounded-xl">
+                Continue
               </Button>
             </Link>
           </div>
@@ -85,7 +85,7 @@ export function CourseCard({ id, title, lecturer, rating, price, imageUrl, blurr
 
   // Default Vertical Layout (for Featured/Catalog)
   return (
-    <div className={`flex flex-col bg-white overflow-hidden rounded-xl border border-zinc-200 shadow-sm transition-all hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900`}>
+    <div className={`flex flex-col bg-white overflow-hidden rounded-xl transition-all hover:shadow-md dark:bg-zinc-900`}>
       <div className="relative h-68 w-full bg-white dark:bg-zinc-800 p-4 pt-4">
         {imageUrl ? (
           <div className="absolute inset-2 md:inset-4 rounded-lg overflow-hidden shadow-inner">
@@ -144,7 +144,7 @@ app.get('/', (req, res) => {
             <span className="text-[32px] font-semibold text-gray-900 dark:text-white">${price}</span>
           </div>
           <Link href={`/courses/${id || '#'}`}>
-            <Button variant="solid" className="text-xl px-5 w-[116px] h-[58px]">Details</Button>
+            <Button variant="solid" className="text-xl px-5 min-w-[130px] h-[58px]">View Details</Button>
           </Link>
         </div>
       </div>

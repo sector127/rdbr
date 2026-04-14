@@ -404,14 +404,16 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
       {/* ── Enrolled View ────────────────────────────────────────────────── */}
       {isEnrolled && enrolled ? (
         <div className="flex flex-col gap-5">
-          <div className="bg-transparent dark:bg-zinc-900">
+          <div className="bg-transparent">
 
-            {/* Status Badge */}
             <div className="mb-5">
               {isCompleted ? (
-                <span className="h-[56px] inline-flex items-center justify-center px-4 py-1.5 text-xl font-semibold rounded-[100px] bg-green-500/10 text-green-400">
-                  Completed
-                </span>
+                <div className="flex flex-col items-center justify-center py-4 px-4 rounded-2xl bg-green-500/10 text-green-500 gap-1 border border-green-500/20">
+                  <span className="text-xl font-bold flex items-center gap-2">
+                    Completed <CheckIcon />
+                  </span>
+                  <span className="text-sm font-medium">Course Completed! 🎉</span>
+                </div>
               ) : (
                 <span className="h-[56px] inline-flex items-center justify-center px-4 py-1.5 text-xl font-semibold rounded-[100px] bg-indigo-500/10 text-indigo-400">
                   Enrolled
@@ -454,7 +456,7 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
             {/* Progress */}
             <div className="mb-5">
               <p className="text-sm font-bold text-zinc-800 dark:text-zinc-200 mb-2">
-                {progress}% Complete
+                Course Progress: {progress}%
               </p>
               <div className="w-full bg-zinc-200 dark:bg-zinc-700 rounded-full h-3 overflow-hidden">
                 <div
@@ -532,12 +534,21 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
               </p>
             </div>
           )}
+
+          {/* Already rated static message */}
+          {ratingDone && !showRatingPopup && isCompleted && (
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm text-center">
+              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                You've already rated this course
+              </p>
+            </div>
+          )}
         </div>
 
       ) : (
         /* ── Non-Enrolled View (Schedule Selection) ─────────────────────── */
         <div className="flex flex-col gap-4">
-          <div className="bg-transparent dark:bg-zinc-900 rounded-2xl divide-y divide-zinc-100 dark:divide-zinc-800">
+          <div className="bg-transparent rounded-2xl divide-y divide-zinc-100 dark:divide-zinc-800">
 
             {/* Step 1: Weekly Schedule */}
             <div className="">
@@ -731,12 +742,12 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
 
                           <div className="text-center flex justify-center items-center gap-1 mt-0.5">
                             {isFullyBooked ? (
-                              <span className="text-[13px] font-medium text-zinc-500 dark:text-zinc-500">No Seats Available</span>
+                              <span className="text-[13px] font-medium text-zinc-500 dark:text-zinc-500">Fully Booked</span>
                             ) : isLowSeats ? (
                               <>
                                 <WarningIcon />
                                 <span className="text-xs font-medium text-amber-500 dark:text-amber-400">
-                                  Only {st.availableSeats} Seats Remaining
+                                  Only {st.availableSeats} seats left!
                                 </span>
                               </>
                             ) : (

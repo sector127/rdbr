@@ -7,7 +7,7 @@ export async function Header() {
   const { session, user, profileComplete } = await getFreshProfile();
   
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/80 backdrop-blur-md dark:border-zinc-800 dark:bg-black/80">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-transparent backdrop-blur-md dark:border-zinc-800 dark:bg-black/80">
       <div className="mx-auto flex py-6 max-w-[1566px] items-center justify-between px-4 lg:px-0">
         <div className="flex items-center gap-2">
           <Link href="/" className="flex items-center gap-2">

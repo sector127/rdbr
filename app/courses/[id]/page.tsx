@@ -50,8 +50,6 @@ export default async function CourseDetailPage({ params }: PageProps) {
   const { session, token, user, profileComplete } = await getFreshProfile();
   const userData = user;
 
-  console.log(userData);
-
   const course = await getCourse(id, token);
 
   if (!course) {
@@ -67,8 +65,8 @@ export default async function CourseDetailPage({ params }: PageProps) {
       <Header />
 
       {/* Breadcrumb */}
-      <div className="bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800">
-        <div className="max-w-[1566px] mx-auto px-4 lg:px-8 py-4">
+      <div className="bg-transparent">
+        <div className="max-w-[1566px] mx-auto py-4">
           <nav className="flex gap-2 text-sm text-zinc-500 font-medium items-center">
             <Link href="/" className="hover:text-indigo-600 transition-colors">Home</Link>
             <span className="text-zinc-300 dark:text-zinc-700">›</span>
@@ -79,7 +77,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
         </div>
       </div>
 
-      <main className="flex-1 w-full max-w-[1566px] mx-auto px-4 lg:px-8 py-10">
+      <main className="flex-1 w-full max-w-[1566px] mx-auto py-10">
         <div className="flex justify-center">
           <div className="grid grid-cols-1 lg:grid-cols-[900px_546px] gap-10 items-start">
 
@@ -157,7 +155,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
                     alt={course.instructor.name}
                     width={36}
                     height={36}
-                    className="rounded-full border border-zinc-200 dark:border-zinc-700"
+                    className="rounded-full border aspect-square object-cover border-zinc-200 dark:border-zinc-700"
                   />
                 ) : (
                   <div className="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-sm">
