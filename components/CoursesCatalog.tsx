@@ -53,7 +53,7 @@ export function CoursesCatalog({
     }
   }, [initialFilters]);
 
-  const updateUrl = (updates: Record<string, any>) => {
+  const updateUrl = (updates: Record<string, string | number | string[] | number[] | undefined>) => {
     const params = new URLSearchParams(searchParams.toString());
     
     Object.entries(updates).forEach(([key, value]) => {

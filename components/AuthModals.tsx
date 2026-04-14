@@ -1,57 +1,22 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Button } from "./Button";
 import Image from "next/image";
 import Link from "next/link";
 import { ProfileModal } from "./ProfileModal";
+import { ModalOverlay } from "./ModalOverlay";
+import { API_URL } from "@/lib/api";
 
 const validateEmail = (email: string) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };
 
-const EyeIcon = ({ visible }: { visible: boolean }) => (
-  <svg width="20" height="20" viewBox="0 0 22 22" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
-    {visible ? (
-      <>
-        <path d="M1.05938 11.348C0.980208 11.1235 0.980208 10.8765 1.05938 10.652C1.83045 8.68365 3.13931 7.00069 4.82002 5.81644C6.50073 4.6322 8.47759 4 10.5 4C12.5224 4 14.4993 4.6322 16.18 5.81644C17.8607 7.00069 19.1695 8.68365 19.9406 10.652C20.0198 10.8765 20.0198 11.1235 19.9406 11.348C19.1695 13.3163 17.8607 14.9993 16.18 16.1836C14.4993 17.3678 12.5224 18 10.5 18C8.47759 18 6.50073 17.3678 4.82002 16.1836C3.13931 14.9993 1.83045 13.3163 1.05938 11.348Z" />
-        <path d="M10.5001 14.0005C12.0741 14.0005 13.35 12.6573 13.35 11.0003C13.35 9.34326 12.0741 8 10.5001 8C8.92619 8 7.65027 9.34326 7.65027 11.0003C7.65027 12.6573 8.92619 14.0005 10.5001 14.0005Z" />
-      </>
-    ) : (
-      <path d="M2 9C2.85907 9.9609 3.87049 10.7965 5 11.4785M5 11.4785C6.2165 12.2111 7.57462 12.7204 9 12.9785C10.3213 13.2128 11.6787 13.2128 13 12.9785C14.4254 12.7204 15.7835 12.2111 17 11.4785M5 11.4785L3.5 13.1538M20 9C19.1409 9.9609 18.1295 10.7965 17 11.4785M17 11.4785L18.5 13.1538M9 12.9775L8.5 15M13 12.9775L13.5 15" />
-    )}
-  </svg>
-);
+import { EyeIcon } from "./icons";
 
-function ModalOverlay({ children, onClose }: { children: React.ReactNode, onClose: () => void }) {
-  const [mounted, setMounted] = useState(false);
-  
-  useEffect(() => {
-    setMounted(true);
-    document.body.style.overflow = 'hidden';
-    return () => {
-      document.body.style.overflow = 'unset';
-    };
-  }, []);
 
-  if (!mounted) return null;
-
-  return createPortal(
-    <div className="fixed inset-0 z-9999 bg-black/30 backdrop-blur-sm flex flex-col items-center justify-center p-4">
-      <div className="absolute inset-0" onClick={onClose} />
-      <div className="relative bg-white dark:bg-gray-900 rounded-xl shadow-xl w-full max-w-[440px] p-8">
-        <button onClick={onClose} className="absolute top-4 right-4 p-1 z-10 cursor-pointer">
-          <Image src="/icons/Close.svg" alt="Close" width={24} height={24} />
-        </button>
-        {children}
-      </div>
-    </div>,
-    document.body
-  );
-}
 
 function Divider({ text }: { text: string }) {
   return (
@@ -103,7 +68,10 @@ function LoginModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: () =
   };
 
   return (
-    <ModalOverlay onClose={onClose}>
+    <ModalOverlay onClose={onClose} className="max-w-[440px] p-8 relative rounded-xl">
+      <button onClick={onClose} className="absolute top-4 right-4 p-1 z-10 cursor-pointer">
+        <Image src="/icons/Close.svg" alt="Close" width={24} height={24} />
+      </button>
       <div className="text-center mb-8">
         <h2 className="text-[28px] font-bold text-gray-900 dark:text-white mb-2">Welcome Back</h2>
         <p className="text-[#5b616e] dark:text-gray-400">Log in to continue your learning</p>
@@ -205,6 +173,7 @@ function RegisterModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: (
         return;
       }
       setAvatar(file);
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
       setAvatarPreview(URL.createObjectURL(file));
       setError("");
     } else {
@@ -227,13 +196,16 @@ function RegisterModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: (
     }
     setError("");
     if (step === 2) {
-      if (!formData.username || formData.username.length < 3 || 
-          !formData.password || formData.password.length < 3 || 
-          formData.password !== formData.password_confirmation) {
-            
-        if (formData.password !== formData.password_confirmation) {
-          setError("Passwords do not match");
-        }
+      if (!formData.username || formData.username.length < 3) {
+        setError("Username must be at least 3 characters");
+        return;
+      }
+      if (!formData.password || formData.password.length < 3) {
+        setError("Password must be at least 3 characters");
+        return;
+      }
+      if (formData.password !== formData.password_confirmation) {
+        setError("Passwords do not match");
         return;
       }
     }
@@ -256,7 +228,7 @@ function RegisterModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: (
         payload.append("avatar", avatar);
       }
 
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/register`, {
+      const res = await fetch(`${API_URL}/register`, {
         method: "POST",
         body: payload,
         headers: { "Accept": "application/json" }
@@ -282,15 +254,18 @@ function RegisterModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: (
       } else {
         setError("Account created, but automatic login failed.");
       }
-    } catch (err: any) {
-      setError(err?.message || "Registration error.");
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Registration error.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <ModalOverlay onClose={onClose}>
+    <ModalOverlay onClose={onClose} className="max-w-[440px] p-8 relative rounded-xl">
+      <button onClick={onClose} className="absolute top-4 right-4 p-1 z-10 cursor-pointer">
+        <Image src="/icons/Close.svg" alt="Close" width={24} height={24} />
+      </button>
       <div className="text-center mb-6">
         <h2 className="text-[28px] font-bold text-gray-900 dark:text-white mb-2">Create Account</h2>
         <p className="text-[#5b616e] dark:text-gray-400">Join and start learning today</p>
@@ -388,7 +363,7 @@ function RegisterModal({ onClose, onSwitch }: { onClose: () => void, onSwitch: (
               />
               {avatarPreview && (
                 <div className="relative h-12 w-12 shrink-0 rounded-full border border-gray-200 overflow-hidden">
-                  <Image src={avatarPreview} alt="Avatar Preview" fill className="object-cover" />
+                  <Image src={avatarPreview} alt="Avatar Preview" fill sizes="48px" className="object-cover" />
                 </div>
               )}
             </div>

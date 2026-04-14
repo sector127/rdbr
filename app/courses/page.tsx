@@ -3,13 +3,32 @@ import { Footer } from "@/components/Footer";
 import { CoursesCatalog } from "@/components/CoursesCatalog";
 import { Course, PaginationMeta } from "@/types/course";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.redclass.redberryinternship.ge';
+import { apiFetch } from "@/lib/api";
+
+interface ApiCategory {
+  id: number;
+  name: string;
+}
+
+interface ApiTopic {
+  id: number;
+  name: string;
+  category_id?: number;
+  categoryId?: number;
+  category?: { id: number };
+}
+
+interface ApiInstructor {
+  id: number;
+  name?: string;
+  full_name?: string;
+  avatar?: string;
+}
 
 async function getCategories() {
   try {
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 3600 } });
-    const data = await res.json();
-    return data.data || [];
+    const data = await apiFetch<ApiCategory[]>("/categories", { next: { revalidate: 3600 } });
+    return Array.isArray(data) ? data : [];
   } catch (e) {
     console.error("Failed to fetch categories", e);
     return [];
@@ -18,9 +37,8 @@ async function getCategories() {
 
 async function getTopics() {
   try {
-    const res = await fetch(`${API_URL}/topics`, { next: { revalidate: 3600 } });
-    const data = await res.json();
-    return data.data || [];
+    const data = await apiFetch<ApiTopic[]>("/topics", { next: { revalidate: 3600 } });
+    return Array.isArray(data) ? data : [];
   } catch (e) {
     console.error("Failed to fetch topics", e);
     return [];
@@ -29,9 +47,8 @@ async function getTopics() {
 
 async function getInstructors() {
   try {
-    const res = await fetch(`${API_URL}/instructors`, { next: { revalidate: 3600 } });
-    const data = await res.json();
-    return data.data || [];
+    const data = await apiFetch<ApiInstructor[]>("/instructors", { next: { revalidate: 3600 } });
+    return Array.isArray(data) ? data : [];
   } catch (e) {
     console.error("Failed to fetch instructors", e);
     return [];
@@ -54,11 +71,11 @@ async function getCoursesData(params: {
   params.instructors?.forEach(id => query.append('instructors[]', id));
 
   try {
-    const res = await fetch(`${API_URL}/courses?${query.toString()}`, { next: { revalidate: 0 } });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL!}/courses?${query.toString()}`, { next: { revalidate: 0 } });
     const data = await res.json();
     return {
-      courses: data.data || [],
-      meta: data.meta || null
+      courses: (data.data as Course[]) || [],
+      meta: (data.meta as PaginationMeta) || null
     };
   } catch (e) {
     console.error("Failed to fetch courses data", e);
@@ -95,22 +112,22 @@ export default async function CoursesPage({
   ]);
 
   // Clean data in case endpoints don't strictly match our expected models
-  const cleanCategories = categoriesData.map((c: any) => ({
+  const cleanCategories = categoriesData.map((c) => ({
     id: c.id,
     name: c.name,
     icon: null,
   }));
 
-  const cleanTopics = topicsData.map((t: any) => ({
+  const cleanTopics = topicsData.map((t) => ({
     id: t.id,
     name: t.name,
-    categoryId: t.category_id || t.categoryId || (t.category && t.category.id),
+    categoryId: t.category_id || t.categoryId || (t.category && t.category.id) || 0,
   }));
 
-  const cleanInstructors = instructorsData.map((i: any) => ({
+  const cleanInstructors = instructorsData.map((i) => ({
     id: i.id,
     name: i.name || i.full_name || "Unknown",
-    avatar: i.avatar || null,
+    avatar: i.avatar || undefined,
   }));
 
   return (
@@ -138,7 +155,7 @@ export default async function CoursesPage({
             categories: categories.map(Number),
             topics: topics.map(Number),
             instructors: instructors.map(Number),
-            sort: sort as any,
+            sort: sort as "newest" | "price_asc" | "price_desc" | "popular" | "title_asc",
             page: Number(page)
           }}
         />

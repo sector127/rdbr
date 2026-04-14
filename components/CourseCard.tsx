@@ -29,7 +29,7 @@ export function CourseCard({ id, title, lecturer, rating, price, imageUrl, blurr
         <div className="flex gap-4">
         <div className="relative w-[140px] h-[123px] shrink-0 rounded-xl overflow-hidden bg-zinc-100 dark:bg-zinc-800">
           {imageUrl ? (
-            <Image src={imageUrl} alt={title} fill className="object-cover" />
+            <Image src={imageUrl} alt={title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
           ) : (
             <div className="absolute inset-0 bg-linear-to-br from-indigo-900 to-zinc-950 flex items-center justify-center">
                <svg className="w-8 h-8 text-indigo-400 opacity-30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -64,12 +64,12 @@ export function CourseCard({ id, title, lecturer, rating, price, imageUrl, blurr
           <div className="mt-auto flex items-end gap-6 justify-between">
             <div className="grow">
               <div className="text-xs font-bold text-gray-900 dark:text-zinc-300 mb-2">
-                {progress || 0}% Complete
+                {progress ?? 0}% Complete
               </div>
               <div className="w-full bg-indigo-50 dark:bg-zinc-800 rounded-full h-4 overflow-hidden">
                 <div 
                   className="bg-indigo-500 dark:bg-indigo-500 h-full rounded-full transition-all duration-500 ease-out" 
-                  style={{ width: `${progress || 0}%` }}
+                  style={{ width: `${progress ?? 0}%` }}
                 ></div>
               </div>
             </div>
@@ -89,7 +89,7 @@ export function CourseCard({ id, title, lecturer, rating, price, imageUrl, blurr
       <div className="relative h-68 w-full bg-white dark:bg-zinc-800 p-4 pt-4">
         {imageUrl ? (
           <div className="absolute inset-2 md:inset-4 rounded-lg overflow-hidden shadow-inner">
-            <Image src={imageUrl} alt={title} fill className="object-cover" />
+            <Image src={imageUrl} alt={title} fill sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw" className="object-cover" />
           </div>
         ) : (
           <div className="absolute inset-2 md:inset-4 rounded-lg bg-linear-to-br from-indigo-900 to-zinc-900 overflow-hidden shadow-inner flex flex-col">

@@ -24,6 +24,6 @@ declare module "next-auth" {
 
 declare module "next-auth/jwt" {
   interface JWT {
-    user?: any;
+    user?: import("next-auth").Session["user"];
   }
 }

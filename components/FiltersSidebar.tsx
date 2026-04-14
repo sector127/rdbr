@@ -139,7 +139,7 @@ export function FiltersSidebar({
               >
                 <div className="relative w-8 h-8 rounded-full overflow-hidden border border-zinc-200 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 shrink-0">
                   {inst.avatar ? (
-                    <Image src={inst.avatar} alt={inst.name} fill className="object-cover" />
+                    <Image src={inst.avatar} alt={inst.name} fill sizes="32px" className="object-cover" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-xs font-bold text-zinc-400">
                       {inst.name.charAt(0)}

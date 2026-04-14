@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      session.user = token.user as any;
+      session.user = token.user as import("next-auth").Session["user"];
       return session;
     }
   },
@@ -53,5 +53,5 @@ export const authOptions: NextAuthOptions = {
   session: {
     strategy: "jwt",
   },
-  secret: process.env.NEXTAUTH_SECRET || "supersecret",
+  secret: process.env.NEXTAUTH_SECRET,
 };

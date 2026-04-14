@@ -8,7 +8,7 @@ import { CourseDetailPanel } from "@/components/CourseDetailPanel";
 import { CategoryIcon } from "@/components/CategoryIcon";
 import { CourseDetail } from "@/types/courseDetail";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.redclass.redberryinternship.ge/api";
+import { apiFetch } from "@/lib/api";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -16,16 +16,10 @@ interface PageProps {
 
 async function getCourse(id: string, token: string | null): Promise<CourseDetail | null> {
   try {
-    const res = await fetch(`${API_URL}/courses/${id}`, {
-      headers: {
-        Accept: "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
+    return await apiFetch<CourseDetail>(`/courses/${id}`, {
+      token,
       cache: "no-store",
     });
-    if (!res.ok) return null;
-    const json = await res.json();
-    return json.data ?? json;
   } catch {
     return null;
   }
@@ -48,7 +42,7 @@ function StarRatingDisplay({ rating }: { rating: number | null }) {
 export default async function CourseDetailPage({ params }: PageProps) {
   const { id } = await params;
   const { session, token, user, profileComplete } = await getFreshProfile();
-  const userData = user;
+
 
   const course = await getCourse(id, token);
 

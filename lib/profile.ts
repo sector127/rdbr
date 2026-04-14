@@ -2,9 +2,9 @@ import { cache } from "react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.redclass.redberryinternship.ge/api";
 
 import { fetchUserData } from "@/lib/api";
+import { getTokenFromSession } from "@/lib/token";
 
 /**
  * Server-only helper to get the NextAuth session, token, and fresh user profile.
@@ -14,19 +14,22 @@ export const getFreshProfile = cache(async () => {
   const session = await getServerSession(authOptions);
   if (!session) return { session: null, token: null, user: null, profileComplete: false };
 
-  const token =
-    (session.user as any)?.token ||
-    (session.user as any)?.access_token ||
-    (session.user as any)?.data?.token ||
-    null;
+  const token = getTokenFromSession(session);
 
   const fetchedUser = await fetchUserData(token);
   const user = fetchedUser || (session.user as any)?.data?.user || session.user;
+  
+  const isComplete = Boolean(
+    user?.fullName && 
+    user?.email && 
+    user?.mobileNumber && 
+    user?.age
+  );
   
   return {
     session,
     token,
     user,
-    profileComplete: !!user?.profileComplete,
+    profileComplete: isComplete,
   };
 });

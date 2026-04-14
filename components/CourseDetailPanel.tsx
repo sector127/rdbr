@@ -2,33 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { createPortal } from "react-dom";
 import Image from "next/image";
 import { CourseDetail } from "@/types/courseDetail";
 import { WeeklySchedule } from "@/types/weeklySchedule";
 import { TimeSlot } from "@/types/timeSlot";
 import { SessionType } from "@/types/sessionType";
 import { ConflictError } from "@/types/conflictError";
+import { apiFetch, API_URL } from "@/lib/api";
+import { CourseRatingSection } from "./course/CourseRatingSection";
+import { CourseConflictModal } from "./course/CourseConflictModal";
+import { CourseSuccessModal } from "./course/CourseSuccessModal";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.redclass.redberryinternship.ge/api";
-
-const MaskedIcon = ({ src, size = 20, className = "bg-zinc-500" }: { src: string; size?: number; className?: string }) => (
-  <div
-    className={`shrink-0 ${className}`}
-    style={{
-      width: `${size}px`,
-      height: `${size}px`,
-      maskImage: `url(${src})`,
-      maskSize: "contain",
-      maskRepeat: "no-repeat",
-      maskPosition: "center",
-      WebkitMaskImage: `url(${src})`,
-      WebkitMaskSize: "contain",
-      WebkitMaskRepeat: "no-repeat",
-      WebkitMaskPosition: "center",
-    }}
-  />
-);
+import { MaskedIcon } from "./icons/MaskedIcon";
 
 const CalendarIcon = () => <MaskedIcon src="/icons/CalendarDots.svg" size={20} className="bg-zinc-500" />;
 const ClockIcon = () => <MaskedIcon src="/icons/Clock.svg" size={20} className="bg-zinc-500" />;
@@ -63,42 +48,6 @@ const formatTimeString = (timeStr: string) => {
   return `${hour}:${m} ${ampm}`;
 };
 
-// ─── Star for rating ──────────────────────────────────────────────────────────
-
-function RatingStar({ filled, onClick, onMouseEnter, onMouseLeave, size = 36, disabled }: {
-  filled: boolean;
-  onClick?: () => void;
-  onMouseEnter?: () => void;
-  onMouseLeave?: () => void;
-  size?: number;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={onClick}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      className="transition-transform hover:scale-110 disabled:cursor-default"
-    >
-      <MaskedIcon 
-        src="/icons/Rating.svg" 
-        size={size} 
-        className={filled ? "bg-[#F5A623]" : "bg-zinc-200 dark:bg-zinc-700"} 
-      />
-    </button>
-  );
-}
-
-// ─── Portal ───────────────────────────────────────────────────────────────────
-
-function Portal({ children }: { children: React.ReactNode }) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { setMounted(true); return () => setMounted(false); }, []);
-  if (!mounted) return null;
-  return createPortal(children, document.body);
-}
 
 // ─── Accordion Section ────────────────────────────────────────────────────────
 
@@ -175,32 +124,16 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
   const [completing, setCompleting] = useState(false);
   const [progress, setProgress] = useState(enrolled?.progress ?? 0);
   const [isCompleted, setIsCompleted] = useState((enrolled?.progress ?? 0) >= 100);
-  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // ── Retake state ──────────────────────────────────────────────────────────
   const [retaking, setRetaking] = useState(false);
 
-  // ── Rating state ──────────────────────────────────────────────────────────
-  const [ratingValue, setRatingValue] = useState(0);
-  const [ratingHovered, setRatingHovered] = useState(0);
-  const [ratingSubmitting, setRatingSubmitting] = useState(false);
-  const [ratingDone, setRatingDone] = useState(course.isRated);
-  const [ratingError, setRatingError] = useState("");
-  const [showRatingPopup, setShowRatingPopup] = useState(false);
-
-  // Show rating popup when course first becomes completed
-  useEffect(() => {
-    if (isCompleted && !ratingDone) {
-      setShowRatingPopup(true);
-    }
-  }, [isCompleted, ratingDone]);
 
   // Sync state with props on update (mostly for session/token changes or soft refreshes)
   useEffect(() => {
     if (course.enrollment) {
       setProgress(course.enrollment.progress);
       setIsCompleted(course.enrollment.progress >= 100);
-      setRatingDone(course.isRated);
     }
   }, [course]);
 
@@ -225,9 +158,8 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
     setLoadingTimeSlots(true);
     setOpenStep(2);
     try {
-      const r = await fetch(`${API_URL}/courses/${course.id}/time-slots?weekly_schedule_id=${schedule.id}`);
-      const d = await r.json();
-      setTimeSlots(d.data || []);
+      const data = await apiFetch<TimeSlot[]>(`/courses/${course.id}/time-slots?weekly_schedule_id=${schedule.id}`);
+      setTimeSlots(data || []);
     } catch {
       setTimeSlots([]);
     } finally {
@@ -244,9 +176,8 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
     setLoadingSessionTypes(true);
     setOpenStep(3);
     try {
-      const r = await fetch(`${API_URL}/courses/${course.id}/session-types?weekly_schedule_id=${selectedSchedule.id}&time_slot_id=${slot.id}`);
-      const d = await r.json();
-      setSessionTypes(d.data || []);
+      const data = await apiFetch<SessionType[]>(`/courses/${course.id}/session-types?weekly_schedule_id=${selectedSchedule.id}&time_slot_id=${slot.id}`);
+      setSessionTypes(data || []);
     } catch {
       setSessionTypes([]);
     } finally {
@@ -338,7 +269,6 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
       if (res.ok) {
         setProgress(100);
         setIsCompleted(true);
-        setShowRatingPopup(true);
       }
     } catch {
       /* silent */
@@ -369,35 +299,6 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
     }
   }, [enrolled, token, router]);
 
-  // ── Rate Course handler ───────────────────────────────────────────────────
-  const handleRate = useCallback(async (rating: number) => {
-    if (!token || rating === 0) return;
-    setRatingSubmitting(true);
-    setRatingError("");
-    try {
-      const res = await fetch(`${API_URL}/courses/${course.id}/reviews`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ rating }),
-      });
-      if (res.ok) {
-        setRatingDone(true);
-        setRatingValue(rating);
-        setTimeout(() => setShowRatingPopup(false), 1500);
-      } else {
-        const d = await res.json().catch(() => ({}));
-        setRatingError(d.message || "Failed to submit rating.");
-      }
-    } catch {
-      setRatingError("An unexpected error occurred.");
-    } finally {
-      setRatingSubmitting(false);
-    }
-  }, [course.id, token]);
 
   return (
     <div className="w-full shrink-0">
@@ -491,58 +392,12 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
               </button>
             )}
           </div>
-
-          {/* Rating Popup (shown when completed) */}
-          {showRatingPopup && !ratingDone && (
-            <div className="bg-white dark:bg-zinc-900 b rounded-2xl p-5 relative">
-              <button
-                onClick={() => setShowRatingPopup(false)}
-                className="absolute top-3 right-3 p-1"
-              >
-                <CloseSmallIcon />
-              </button>
-              <p className="text-center text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-4">
-                Rate your experience
-              </p>
-              <div className="flex justify-center gap-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <RatingStar
-                    key={star}
-                    filled={(ratingHovered || ratingValue) >= star}
-                    onClick={() => {
-                      setRatingValue(star);
-                      handleRate(star);
-                    }}
-                    onMouseEnter={() => setRatingHovered(star)}
-                    onMouseLeave={() => setRatingHovered(0)}
-                    disabled={ratingSubmitting}
-                    size={36}
-                  />
-                ))}
-              </div>
-              {ratingError && (
-                <p className="text-xs text-red-500 text-center mt-2">{ratingError}</p>
-              )}
-            </div>
-          )}
-
-          {/* Rating submitted confirmation */}
-          {ratingDone && showRatingPopup && (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm text-center">
-              <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                Thanks for your rating! 🎉
-              </p>
-            </div>
-          )}
-
-          {/* Already rated static message */}
-          {ratingDone && !showRatingPopup && isCompleted && (
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-5 shadow-sm text-center">
-              <p className="text-sm font-medium text-zinc-500 dark:text-zinc-400">
-                You've already rated this course
-              </p>
-            </div>
-          )}
+          <CourseRatingSection
+            courseId={course.id}
+            token={token}
+            isCompleted={isCompleted}
+            initialRatingDone={course.isRated}
+          />
         </div>
 
       ) : (
@@ -846,62 +701,16 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
 
       {/* ── Conflict Warning Modal ────────────────────────────────────────── */}
       {conflictData && (
-        <Portal>
-          <div className="fixed inset-0 z-9999 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-md p-8">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center shrink-0">
-                  <WarningIcon />
-                </div>
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Schedule Conflict</h2>
-              </div>
-              {conflictData.conflicts.map((c, i) => (
-                <p key={i} className="text-sm text-zinc-600 dark:text-zinc-400 mb-3">
-                  You are already enrolled in{" "}
-                  <strong className="text-zinc-900 dark:text-white">{c.conflictingCourseName}</strong>{" "}
-                  with the same schedule: <strong>{c.schedule}</strong>.
-                </p>
-              ))}
-              <p className="text-sm text-zinc-500 mb-6">Are you sure you want to continue?</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setConflictData(null)}
-                  className="flex-1 py-2.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-sm font-medium text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => { setConflictData(null); handleEnroll(true); }}
-                  className="flex-1 py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold transition-colors"
-                >
-                  Continue Anyway
-                </button>
-              </div>
-            </div>
-          </div>
-        </Portal>
+        <CourseConflictModal
+          conflictData={conflictData}
+          onCancel={() => setConflictData(null)}
+          onContinue={() => {
+            setConflictData(null);
+            handleEnroll(true);
+          }}
+        />
       )}
 
-      {/* ── Success Modal ─────────────────────────────────────────────────── */}
-      {showSuccessModal && (
-        <Portal>
-          <div className="fixed inset-0 z-9999 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl w-full max-w-sm p-8 text-center">
-              <div className="text-5xl mb-4">🎉</div>
-              <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Congratulations!</h2>
-              <p className="text-sm text-zinc-500 mb-6">
-                You&apos;ve completed <strong className="text-zinc-900 dark:text-white">{course.title}</strong>!
-              </p>
-              <button
-                onClick={() => setShowSuccessModal(false)}
-                className="w-full py-2.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition-colors"
-              >
-                Awesome!
-              </button>
-            </div>
-          </div>
-        </Portal>
-      )}
     </div>
   );
 }

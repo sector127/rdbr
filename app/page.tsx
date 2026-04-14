@@ -6,64 +6,41 @@ import { Button } from "@/components/Button";
 import { Course } from "@/types/course";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { headers } from "next/headers";
+import { getTokenFromSession } from "@/lib/token";
+import { apiFetch } from "@/lib/api";
 import Link from "next/link";
 
 async function getFeaturedCourses(): Promise<Course[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.redclass.redberryinternship.ge'}/courses/featured`, {
+    const data = await apiFetch<unknown[]>("/courses/featured", {
       next: { revalidate: 3600 }
     });
-    if (!res.ok) return [];
-    
-    const data = await res.json();
-    return Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
+    return Array.isArray(data) ? data as Course[] : [];
   } catch (e) {
     console.error("Failed to fetch featured courses:", e);
     return [];
   }
 }
 
-async function getEnrolledCourses(token: string): Promise<any[]> {
+interface EnrolledCourseResponse {
+  id: number;
+  progress: number;
+  course: Course;
+}
+
+async function getEnrolledCourses(token: string): Promise<EnrolledCourseResponse[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.redclass.redberryinternship.ge'}/courses/in-progress`, {
-      headers: {
-        "Authorization": `Bearer ${token}`
-      },
-      cache: 'no-store'
+    const data = await apiFetch<unknown[]>("/courses/in-progress", {
+      token,
+      cache: "no-store",
     });
-    if (!res.ok) return [];
-    
-    const data = await res.json();
-    return Array.isArray(data.data) ? data.data : (Array.isArray(data) ? data : []);
-  } catch (e) {
-    console.error("Failed to fetch in-progress courses:", e);
+    return Array.isArray(data) ? (data as EnrolledCourseResponse[]) : [];
+  } catch {
     return [];
   }
 }
 
-async function getCorrectRating(courseId: number, initialRating?: number | null): Promise<number> {
-  // If we already have a rating and it's not zero, we can trust it (following sidebar logic)
-  const rating = typeof initialRating === 'number' ? initialRating : undefined;
-  if (rating && rating > 0) return rating;
 
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'https://api.redclass.redberryinternship.ge'}/courses/${courseId}`, {
-      next: { revalidate: 300 } // Brief cache for efficiency
-    });
-    if (!res.ok) return 0;
-    
-    const data = await res.json();
-    const reviews = data.data?.reviews || [];
-    if (reviews.length === 0) return 0;
-    
-    const total = reviews.reduce((sum: number, r: any) => sum + r.rating, 0);
-    return Number((total / reviews.length).toFixed(1));
-  } catch (e) {
-    console.error(`Failed to fetch correct rating for course ${courseId}:`, e);
-    return initialRating || 0;
-  }
-}
 
 export default async function Home() {
   const [coursesData, session] = await Promise.all([
@@ -71,55 +48,35 @@ export default async function Home() {
     getServerSession(authOptions)
   ]);
 
-  // Enrich featured courses with correct ratings
-  const displayCoursesWithRatings = await Promise.all(
-    coursesData.map(async (course: Course) => {
-      const rating = await getCorrectRating(course.id, course.avgRating);
-      return {
-        id: course.id,
-        title: course.title,
-        lecturer: course.instructor.name,
-        rating,
-        price: Number(course.basePrice),
-        imageUrl: course.image,
-        description: course.description
-      };
-    })
-  );
+  const courses = coursesData.map((course: Course) => ({
+    id: course.id,
+    title: course.title,
+    lecturer: course.instructor.name,
+    rating: course.avgRating ?? 0,
+    price: Number(course.basePrice),
+    imageUrl: course.image,
+    description: course.description
+  }));
 
-  const courses = displayCoursesWithRatings.length > 0 ? displayCoursesWithRatings : [
-    { id: 1, title: "Advanced React & TypeScript Development", lecturer: "Marilyn Mango", rating: 4.9, price: 299 },
-    { id: 2, title: "Advanced React & TypeScript Development", lecturer: "Marilyn Mango", rating: 4.9, price: 299 },
-    { id: 3, title: "Advanced React & TypeScript Development", lecturer: "Marilyn Mango", rating: 4.9, price: 299 },
-  ];
-
-  let enrolledCourses: any[] = [];
-  if (session) {
-    const token = (session?.user as any)?.token || (session?.user as any)?.access_token || (session?.user as any)?.data?.token;
-    if (token) {
-      enrolledCourses = await getEnrolledCourses(token);
-    }
+  let enrolledCourses: EnrolledCourseResponse[] = [];
+  const token = getTokenFromSession(session);
+  if (session && token) {
+    enrolledCourses = await getEnrolledCourses(token);
   }
 
-  // Enrich progress courses with correct ratings
-  const progressCoursesList = enrolledCourses.slice(0, 4);
-  const progressCourses = await Promise.all(
-    progressCoursesList.map(async (enrollment: any) => {
-      const course = enrollment.course || enrollment; 
-      const rating = await getCorrectRating(course.id, course.avgRating);
-      
-      return {
-        id: course.id || 1,
-        title: course.title || "Unknown Course",
-        lecturer: course?.instructor?.name || "Unknown Lecturer",
-        rating,
-        price: Number(course.basePrice || 0),
-        imageUrl: course.image,
-        description: course.description,
-        progress: enrollment.progress || 0 
-      };
-    })
-  );
+  const progressCourses = enrolledCourses.slice(0, 4).map((enrollment) => {
+    const course = enrollment.course || enrollment as unknown as Course;
+    return {
+      id: course.id,
+      title: course.title || "Unknown Course",
+      lecturer: course?.instructor?.name || "Unknown Lecturer",
+      rating: course.avgRating ?? 0,
+      price: Number(course.basePrice ?? 0),
+      imageUrl: course.image,
+      description: course.description,
+      progress: enrollment.progress ?? 0
+    };
+  });
 
   const hasProgress = session && progressCourses.length > 0;
 
@@ -135,7 +92,7 @@ export default async function Home() {
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {courses.map((course: any, index: number) => (
+        {courses.map((course: { id: number; title: string; lecturer: string; rating: number; price: number; imageUrl: string; description: string; }, index: number) => (
           <CourseCard key={index} {...course} />
         ))}
       </div>
@@ -163,7 +120,7 @@ export default async function Home() {
           <>
             {/* Background blurred cards */}
             <div className="flex gap-6 overflow-hidden">
-              {courses.slice(0, 4).map((course: any, index: number) => (
+              {courses.slice(0, 4).map((course: { id: number; title: string; lecturer: string; rating: number; price: number; imageUrl: string; description: string; }, index: number) => (
                 <div key={`blur-${index}`} className="min-w-[340px] flex-1">
                   <CourseCard {...course} blurred={true} />
                 </div>
@@ -207,7 +164,7 @@ export default async function Home() {
             </div>
           ) : (
             <div className="flex gap-8 overflow-x-auto pb-6 scrollbar-hide">
-              {progressCourses.map((course: any) => (
+              {progressCourses.map((course: { id: number; title: string; lecturer: string; rating: number; price: number; imageUrl: string; description: string; progress: number; }) => (
                 <div key={`prog-${course.id}`} className="min-w-[380px] lg:min-w-0 lg:flex-1">
                   <CourseCard {...course} />
                 </div>
