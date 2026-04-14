@@ -59,7 +59,7 @@ export function ModalOverlay({
     >
       <div 
         ref={modalRef}
-        className={`bg-white dark:bg-zinc-950 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative ${className}`}
+        className={`bg-white dark:bg-zinc-950 rounded-2xl w-full max-w-[460px] max-h-[90vh] overflow-y-auto relative ${className}`}
         onClick={(e) => e.stopPropagation()}
       >
         {children}
