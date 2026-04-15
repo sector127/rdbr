@@ -10,18 +10,31 @@ import { apiFetch } from "@/lib/api";
 import { createPortal } from "react-dom";
 import { useSession } from "next-auth/react";
 import { Button } from "./Button";
+import { MaskedIcon } from "./icons/MaskedIcon";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://api.redclass.redberryinternship.ge/api";
 
 import { 
   CloseIcon, 
-  CalendarIcon, 
-  ClockIcon, 
   UserIcon, 
-  MapPinIcon, 
   StarIcon 
 } from "./icons";
 
+const CalendarIcon = () => <MaskedIcon src="/icons/CalendarDots.svg" size={20} className="bg-zinc-500" />;
+const ClockIcon = () => <MaskedIcon src="/icons/Clock.svg" size={20} className="bg-zinc-500" />;
+const DesktopIcon = () => <MaskedIcon src="/icons/Desktop.svg" size={20} className="bg-zinc-500" />;
+const DisplayIcon = () => <MaskedIcon src="/icons/Online.svg" size={20} className="bg-zinc-500" />;
+const MapPinIcon = ({ className }: { className?: string }) => <MaskedIcon src="/icons/MapPin.svg" size={20} className={className || "bg-zinc-500"} />;
+const HybridIcon = () => <MaskedIcon src="/icons/Hybrid.svg" size={20} className="bg-zinc-500" />;
+const InPersonIcon = () => <MaskedIcon src="/icons/InPerson.svg" size={20} className="bg-zinc-500" />;
+
+const getSessionTypeIcon = (sessionType: string) => {
+  const loc = sessionType.toLowerCase();
+  if (loc.includes("online")) return <DisplayIcon />;
+  if (loc.includes("hybrid")) return <HybridIcon />;
+  if (loc.includes("in_person") || loc.includes("in-person")) return <InPersonIcon />;
+  return <MapPinIcon />;
+};
 
 // ─── types ───────────────────────────────────────────────────────────────────
 
@@ -74,7 +87,6 @@ export function EnrolledCoursesSidebar() {
         .finally(() => setLoading(false));
     }
   }, [isOpen, session]);
-
   // Lock scroll when open
   useEffect(() => {
     if (isOpen) {
@@ -167,10 +179,10 @@ export function EnrolledCoursesSidebar() {
                       </div>
                       <div className="flex items-center gap-2.5 text-[13px] text-zinc-500 dark:text-zinc-400">
                         <ClockIcon />
-                        <span>{enr.schedule.timeSlot.label}</span>
+                        <span>{enr.schedule.timeSlot.label.replace(/[()]/g, "")}</span>
                       </div>
                       <div className="flex items-center gap-2.5 text-[13px] text-zinc-500 dark:text-zinc-400">
-                        <UserIcon />
+                        {getSessionTypeIcon(enr.schedule.sessionType.name)}
                         <span className="capitalize">{enr.schedule.sessionType.name.replace('_', ' ')}</span>
                       </div>
                       {enr.schedule.location && (

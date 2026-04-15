@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./Button";
@@ -24,23 +24,32 @@ const HERO_SLIDES = [
 
 export function HeroBanner() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
-  const handleNext = () => {
-    if (currentIndex < HERO_SLIDES.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    }
-  };
+  const handleNext = useCallback(() => {
+    setCurrentIndex((prev) => (prev === HERO_SLIDES.length - 1 ? 0 : prev + 1));
+  }, []);
 
-  const handlePrev = () => {
-    if (currentIndex > 0) {
-      setCurrentIndex((prev) => prev - 1);
-    }
-  };
+  const handlePrev = useCallback(() => {
+    setCurrentIndex((prev) => (prev === 0 ? HERO_SLIDES.length - 1 : prev - 1));
+  }, []);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    const interval = setInterval(() => {
+      handleNext();
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [handleNext, isPaused, currentIndex]);
 
   const currentSlide = HERO_SLIDES[currentIndex];
 
   return (
     <div
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
       className="relative w-[1566px] max-w-full h-[420px] mx-auto overflow-hidden rounded-3xl mt-16 flex flex-col justify-start bg-zinc-900"
     >
       {/* Background Image Carousel */}
@@ -97,16 +106,14 @@ export function HeroBanner() {
       <div className="absolute bottom-[59px] right-[78px] z-20 flex gap-3">
         <button
           onClick={handlePrev}
-          disabled={currentIndex === 0}
-          className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-white transition-colors backdrop-blur-sm ${currentIndex === 0 ? 'opacity-30 cursor-not-allowed bg-black/10' : 'hover:bg-white/20 bg-black/20'}`}
+          className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-white transition-colors backdrop-blur-sm hover:bg-white/20 bg-black/20"
           aria-label="Previous slide"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
         <button
           onClick={handleNext}
-          disabled={currentIndex === HERO_SLIDES.length - 1}
-          className={`flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-white transition-colors backdrop-blur-sm ${currentIndex === HERO_SLIDES.length - 1 ? 'opacity-30 cursor-not-allowed bg-black/10' : 'hover:bg-white/20 bg-black/20'}`}
+          className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-white text-white transition-colors backdrop-blur-sm hover:bg-white/20 bg-black/20"
           aria-label="Next slide"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>

@@ -18,7 +18,7 @@ import { MaskedIcon } from "./icons/MaskedIcon";
 const CalendarIcon = () => <MaskedIcon src="/icons/CalendarDots.svg" size={20} className="bg-zinc-500" />;
 const ClockIcon = () => <MaskedIcon src="/icons/Clock.svg" size={20} className="bg-zinc-500" />;
 const DesktopIcon = () => <MaskedIcon src="/icons/Desktop.svg" size={20} className="bg-zinc-500" />;
-const MapPinIcon = ({ className }: { className?: string }) => <MaskedIcon src="/icons/MapPin.svg" size={12} className={className || "bg-zinc-500"} />;
+const MapPinIcon = ({ className }: { className?: string }) => <MaskedIcon src="/icons/MapPin.svg" size={20} className={className || "bg-zinc-500"} />;
 
 const ChevronDownIcon = ({ open }: { open: boolean }) => (
   <div className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`}>
@@ -334,7 +334,7 @@ export function CourseDetailPanel({ course, token, isLoggedIn, profileComplete }
                 <ClockIcon />
                 <span className="text-[14px] text-zinc-700 dark:text-zinc-300">
                   {enrolled.schedule?.timeSlot?.label
-                    ? `${enrolled.schedule.timeSlot.label}`
+                    ? enrolled.schedule.timeSlot.label.replace(/[()]/g, "")
                     : "—"}
                 </span>
               </div>
