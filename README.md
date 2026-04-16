@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Redberry (RDBR)
 
-## Getting Started
+A modern, high-performance e-learning platform built for the Redberry Internship selection process. This portal provides an integrated experience for students to browse courses, track their learning progress, and manage their professional profiles.
 
-First, run the development server:
+## 🚀 Key Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Interactive Course Catalog**: Comprehensive listing of courses with filtering, search, and category-based navigation.
+- **Personalized Dashboard**: Track enrolled courses, view completion progress, and resume learning from where you left off.
+- **Secure Authentication**: Robust sign-in/sign-up flow using NextAuth.js with JWT sessions.
+- **Rich Course Details**: Detailed information including curriculum, instructor bios, ratings, and course duration.
+- **Dynamic UX**: Fast, client-side transitions, loading skeletons, and responsive design for all devices.
+- **Theme Support**: Seamless switching between Light and Dark modes.
+- **Profile Management**: Step-by-step registration and detailed profile editor.
+
+## 🛠️ Technology Stack
+
+- **Core Framework**: [Next.js 16](https://nextjs.org/) (App Router)
+- **Programming Language**: [TypeScript](https://www.typescriptlang.org/)
+- **UI Styling**: [Tailwind CSS 4](https://tailwindcss.com/)
+- **Authentication**: [NextAuth.js](https://next-auth.js.org/)
+- **Icons**: Custom SVG icons
+- **State Management**: Standard React hooks & URL search parameters
+- **Typography**: Inter & Geist Mono
+
+## 📂 Project Structure
+
+- `app/`: Next.js App Router folders (Pages, API routes).
+- `components/`: Modular, reusable UI components.
+- `lib/`: Shared utility functions (API fetchers, auth config).
+- `public/`: Static assets (Icons, logos).
+- `types/`: Global TypeScript definitions.
+
+## 🏁 Getting Started
+
+### Prerequisites
+
+- Node.js (v20 or newer recommended)
+- npm / pnpm / yarn
+
+### Environment Variables
+
+Create a `./env.local` file in the root directory and configure the following:
+
+```env
+NEXT_PUBLIC_API_URL=https://your-api-url.com
+NEXTAUTH_SECRET=your_jwt_secret
+NEXTAUTH_URL=http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Installation & Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+3. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-To learn more about Next.js, take a look at the following resources:
+## 📝 License
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This project is part of the Redberry Bootcamp / Internship program.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with ❤️ by the Redberry Team.
