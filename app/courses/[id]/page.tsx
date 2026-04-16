@@ -72,7 +72,7 @@ export default async function CourseDetailPage({ params }: PageProps) {
       </div>
 
       <main className="flex-1 w-full max-w-[1566px] mx-auto py-10">
-        <div className="flex justify-center">
+        <div className="flex justify-between">
           <div className="grid grid-cols-1 lg:grid-cols-[900px_546px] gap-10 items-start">
 
           {/* ── Left Column ──────────────────────────────────────────────── */}
